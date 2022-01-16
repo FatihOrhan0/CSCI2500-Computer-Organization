@@ -41,7 +41,7 @@ void playDiamond() {
     else { 
         printf("ERROR: invalid input; please try again\n");
     }
-    } while (input != -1);
+    } while (input != -1); 
 
 }
 
