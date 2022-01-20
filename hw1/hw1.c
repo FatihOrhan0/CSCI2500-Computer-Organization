@@ -34,8 +34,18 @@ int main(int argc, char * argv[]) {
     }
     if (neg) { 
         fprintf(stderr, "ERROR: Negative Numbers!");
+        return EXIT_FAILURE;
+    }
+
+    if (argv[2] != argv[3]) { 
+        fprintf(stderr, "ERROR: Incompatible Sizes");
+        return EXIT_FAILURE;
     }
     //at this point we're ready to allocate memory for the matrixes
+    int ** matrix1 = matrix_alloc(atoi(argv[1]), atoi(argv[2]));
+    int ** matrix2 = matrix_alloc(atoi(argv[3]), atoi(argv[4]));
+    int ** resultant = matrix_alloc(atoi(argv[1]), atoi(argv[4]));
+
 
     return EXIT_SUCCESS;
 } 
