@@ -20,6 +20,14 @@ int ** matrix_alloc(int rows, int cols) {
     return matrix;
 }
 
+bool errorCheck(char * argv[], int argc) { 
+    bool neg = false;
+    for (int i = 1; i < argc; i++) { 
+        if (atoi(argv[i]) < 0) { 
+            return true;
+        }
+    }
+}
 
 //this function finds the max digit number in a given matrix.
 int findMaxDigits(int ** m, const int row, const int col){ 
@@ -118,6 +126,22 @@ void printMatrixes(int ** m1, int row1, int col1, int ** m2, int row2, int col2)
     } */
 }
 
+//this function multiplies the m1 and m2 and stores the results
+//in resultant
+void multiplyMatrixes(int ** m1, int ** m2, int ** resultant,
+                      int row1, int col2, int col1) { 
+    for (int i = 0; i < row1; i++) { 
+        for (int j = 0; j < col2; j++) { 
+            int cell = 0; 
+            for (int k = 0; k < col1; k++) { 
+                cell += m1[i][k] * m2[k][j];
+                printf("%d %d %d\n", m1[i][k], m2[k][j], m1[i][k] * m2[k][j]);
+            }
+            resultant[i][j] = cell;
+        }
+    }
+}
+
 int main(int argc, char * argv[]) {
     /* Ensure we have the correct number of command-line arguments */
     if (argc != 5) {
@@ -126,12 +150,8 @@ int main(int argc, char * argv[]) {
     }
 
     //check if any of the values are negative
-    bool neg = false;
-    for (int i = 1; i < argc; i++) { 
-        if (atoi(argv[i]) < 0) { 
-            neg = true;
-        }
-    }
+    bool neg = errorCheck(argv, argc);
+
     if (neg) { 
         fprintf(stderr, "ERROR: Negative Numbers!");
         return EXIT_FAILURE;
@@ -153,6 +173,10 @@ int main(int argc, char * argv[]) {
         for (int j = 0; j < atoi(argv[2]); j++) { 
             int read;
             scanf("%d", &read);
+            if (read < 0) { 
+                fprintf(stderr, "ERROR: Negative Number(s) Found");
+                return EXIT_FAILURE;
+            }
             matrix1[i][j] = read;
         }
     }
@@ -163,10 +187,23 @@ int main(int argc, char * argv[]) {
         for (int j = 0; j < atoi(argv[4]); j++) { 
             int read;
             scanf("%d", &read);
+            if (read < 0) { 
+                fprintf(stderr, "ERROR: Negative Number(s) Found");
+                return EXIT_FAILURE;
+            }
             matrix2[i][j] = read;
         }
     }
-    printMatrixes(matrix1, atoi(argv[1]), atoi(argv[2]), matrix2, atoi(argv[3]), atoi(argv[4]));
+
+    multiplyMatrixes(matrix1, matrix2, resultant,
+                     atoi(argv[1]), atoi(argv[4]), atoi(argv[2]));
+
+    printMultiplication(matrix1, matrix2, atoi(argv[1]), atoi(argv[2]),
+    atoi(argv[3]), atoi(argv[4]));
+
+    deallocate(matrix1);
+    deallocate(matrix2);
+    deallocate(resultant);
 
     return EXIT_SUCCESS;
 } 
