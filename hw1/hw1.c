@@ -20,13 +20,20 @@ int ** matrix_alloc(int rows, int cols) {
     return matrix;
 }
 
+void deallocate(int ** matrix, int row) { 
+    for (int i = 0; i < row; i++) { 
+        free(matrix[i]);
+    }
+    free(matrix);
+}
+
 bool errorCheck(char * argv[], int argc) { 
-    bool neg = false;
     for (int i = 1; i < argc; i++) { 
         if (atoi(argv[i]) < 0) { 
             return true;
         }
     }
+    return false;
 }
 
 //this function finds the max digit number in a given matrix.
@@ -40,6 +47,23 @@ int findMaxDigits(int ** m, const int row, const int col){
         }
     }
     return max;
+}
+
+//this function reads in the input and stores it in the matrix
+bool readMatrix(int ** matrix, int row, int col) { 
+    printf("Please enter non-negative integer values for the first matrix (%dx%d):",
+    row, col);
+    for (int i = 0; i < row; i++) { 
+        for (int j = 0; j < col; j++) { 
+            int read;
+            scanf("%d", &read);
+            if (read < 0) { 
+                return false;
+            }
+            matrix[i][j] = read;
+        }
+    }
+    return true;
 }
 
 //a function to print a matrix1 multiplied by matrix 2.
@@ -135,7 +159,6 @@ void multiplyMatrixes(int ** m1, int ** m2, int ** resultant,
             int cell = 0; 
             for (int k = 0; k < col1; k++) { 
                 cell += m1[i][k] * m2[k][j];
-                printf("%d %d %d\n", m1[i][k], m2[k][j], m1[i][k] * m2[k][j]);
             }
             resultant[i][j] = cell;
         }
@@ -157,6 +180,7 @@ int main(int argc, char * argv[]) {
         return EXIT_FAILURE;
     }
 
+    //sizes must match for multiplication
     if (atoi(argv[2]) != atoi(argv[3])) { 
         fprintf(stderr, "ERROR: Incompatible Sizes");
         return EXIT_FAILURE;
@@ -167,43 +191,32 @@ int main(int argc, char * argv[]) {
     int ** matrix2 = matrix_alloc(atoi(argv[3]), atoi(argv[4]));
     int ** resultant = matrix_alloc(atoi(argv[1]), atoi(argv[4]));
 
-    printf("Please enter non-negative integer values for the first matrix (%dx%d):",
-    atoi(argv[1]), atoi(argv[2]));
-    for (int i = 0; i < atoi(argv[1]); i++) { 
-        for (int j = 0; j < atoi(argv[2]); j++) { 
-            int read;
-            scanf("%d", &read);
-            if (read < 0) { 
-                fprintf(stderr, "ERROR: Negative Number(s) Found");
-                return EXIT_FAILURE;
-            }
-            matrix1[i][j] = read;
-        }
+    if (!readMatrix(matrix1, atoi(argv[1]), atoi(argv[2]))) { 
+        fprintf(stderr, "ERROR: Negative Number(s) Found");
+        deallocate(matrix1, atoi(argv[1]));
+        deallocate(matrix2, atoi(argv[3]));
+        deallocate(resultant, atoi(argv[1]));
+        return EXIT_FAILURE;
     }
 
-    printf("Please enter non-negative integer values for the second matrix (%dx%d):",
-    atoi(argv[3]), atoi(argv[4]));
-    for (int i = 0; i < atoi(argv[3]); i++) { 
-        for (int j = 0; j < atoi(argv[4]); j++) { 
-            int read;
-            scanf("%d", &read);
-            if (read < 0) { 
-                fprintf(stderr, "ERROR: Negative Number(s) Found");
-                return EXIT_FAILURE;
-            }
-            matrix2[i][j] = read;
-        }
+    if (!readMatrix(matrix2, atoi(argv[3]), atoi(argv[4]))) { 
+        fprintf(stderr, "ERROR: Negative Number(s) Found");
+        deallocate(matrix1, atoi(argv[1]));
+        deallocate(matrix2, atoi(argv[3]));
+        deallocate(resultant, atoi(argv[1]));
+        return EXIT_FAILURE;
     }
+
 
     multiplyMatrixes(matrix1, matrix2, resultant,
                      atoi(argv[1]), atoi(argv[4]), atoi(argv[2]));
 
-    printMultiplication(matrix1, matrix2, atoi(argv[1]), atoi(argv[2]),
-    atoi(argv[3]), atoi(argv[4]));
+    //printMultiplication(matrix1, matrix2, atoi(argv[1]), atoi(argv[2]),
+    //atoi(argv[3]), atoi(argv[4]));
 
-    deallocate(matrix1);
-    deallocate(matrix2);
-    deallocate(resultant);
+    deallocate(matrix1, atoi(argv[1]));
+    deallocate(matrix2, atoi(argv[3]));
+    deallocate(resultant, atoi(argv[1]));
 
     return EXIT_SUCCESS;
 } 
