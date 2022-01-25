@@ -39,6 +39,7 @@ int findDigits(int num) {
     return digit;
 }
 
+//checks if there are negative args
 bool errorCheck(char * argv[], int argc) { 
     for (int i = 1; i < argc; i++) { 
         if (atoi(argv[i]) < 0) { 
@@ -76,7 +77,7 @@ void printRow(int ** m, int colNumber, int targetRow, int * cols) {
     }
 } 
 
-//this function prints the matrixes' multiplication
+//this function prints the matrices' multiplication
 void printMultiplication(int ** m1, int row1, int col1,
                          int ** m2, int row2, int col2) {   
     int * cols1 = findMaxCols(m1, row1, col1);
@@ -105,7 +106,7 @@ void printMultiplication(int ** m1, int row1, int col1,
         printf("\n");
         row++;
     }
-    //consider the remaining matrixes here.
+    //consider the remaining matrices here.
 
     free(cols1);
     free(cols2);
@@ -129,8 +130,8 @@ void printResultant(int ** res, int row, int col) {
 }
 //this function reads in the input and stores it in the matrix
 bool readMatrix(int ** matrix, int row, int col) { 
-    printf("Please enter non-negative integer values for the first matrix (%dx%d):",
-    row, col);
+    printf("Please enter non-negative integer values for the"
+    "first matrix (%dx%d):\n", row, col);
     for (int i = 0; i < row; i++) { 
         for (int j = 0; j < col; j++) { 
             int read;
@@ -147,7 +148,7 @@ bool readMatrix(int ** matrix, int row, int col) {
 
 //this function multiplies the m1 and m2 and stores the results
 //in resultant
-void multiplyMatrixes(int ** m1, int ** m2, int ** resultant,
+void multiplymatrices(int ** m1, int ** m2, int ** resultant,
                       int row1, int col2, int col1) { 
     for (int i = 0; i < row1; i++) { 
         for (int j = 0; j < col2; j++) { 
@@ -183,11 +184,12 @@ int main(int argc, char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    //at this point we're ready to allocate memory for the matrixes
+    //at this point we're ready to allocate memory for the matrices
     int ** matrix1 = matrix_alloc(atoi(argv[1]), atoi(argv[2]));
     int ** matrix2 = matrix_alloc(atoi(argv[3]), atoi(argv[4]));
     int ** resultant = matrix_alloc(atoi(argv[1]), atoi(argv[4]));
 
+    //read the matrices, if there happens to be a negative value return failure
     if (!readMatrix(matrix1, atoi(argv[1]), atoi(argv[2]))) { 
         fprintf(stderr, "ERROR: Negative Number(s) Found");
         deallocate(matrix1, atoi(argv[1]));
@@ -204,17 +206,20 @@ int main(int argc, char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    printMultiplication(matrix1, atoi(argv[1]), atoi(argv[2]), matrix2,
-    atoi(argv[3]), atoi(argv[4]));
-
-    multiplyMatrixes(matrix1, matrix2, resultant,
+    //multiply the matrices if they were read
+    multiplymatrices(matrix1, matrix2, resultant,
                      atoi(argv[1]), atoi(argv[4]), atoi(argv[2]));
 
+    //print the multiplication and the resultant
+    printMultiplication(matrix1, atoi(argv[1]), atoi(argv[2]), matrix2,
+    atoi(argv[3]), atoi(argv[4]));
+    printResultant(resultant, atoi(argv[1]), atoi(argv[4]));
 
+
+    //free the memory needed for the matrices
     deallocate(matrix1, atoi(argv[1]));
     deallocate(matrix2, atoi(argv[3]));
     deallocate(resultant, atoi(argv[1]));
-    // printf("%d", findDigits(312));
 
     return EXIT_SUCCESS;
 } 
