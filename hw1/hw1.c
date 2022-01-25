@@ -69,10 +69,17 @@ int * findMaxCols(int ** m, const int row, const int col){
 
 
 //this function prints the target row in the specified format.
-/* 
-void printRow(int ** m, int rowNumber, int colNumber, int targetRow, int * cols) { 
 
-} */
+void printRow(int ** m, int colNumber, int targetRow, int * cols) { 
+    printf("[");
+    for (int i = 0; i < colNumber; i++) { 
+        if (i != colNumber - 1)
+            printf("%*d  ", cols[i], m[targetRow][i]);
+        else 
+            printf("%*d]", cols[i], m[targetRow][i]);
+    }
+    printf("\n");
+} 
 
 //this function reads in the input and stores it in the matrix
 bool readMatrix(int ** matrix, int row, int col) { 
@@ -156,6 +163,9 @@ int main(int argc, char * argv[]) {
         printf("%d ", cols[i]);
     }
     printf("\n");
+
+    printRow(matrix1, atoi(argv[2]), 0, cols);
+    printRow(matrix1, atoi(argv[2]), 1, cols);
     free(cols);
 
     multiplyMatrixes(matrix1, matrix2, resultant,
