@@ -51,25 +51,21 @@ bool errorCheck(char * argv[], int argc) {
 //this function finds the max digit numbers of cols of a matrix.
 int * findMaxCols(int ** m, const int row, const int col){ 
     int * colMax = calloc(col, sizeof(int));
-    for (int i = 0; i < col; i++) { 
-        printf("%d ", colMax[i]);
-    }
-    printf("\n");
     for (int j = 0; j < col; j++) { 
         int max = 0; 
         for (int i = 0; i < row; i++) {
             int digit = findDigits(m[i][j]); 
             if (digit > max) { 
-                colMax[j] = digit;
+                max = digit;
             }
         }
+        colMax[j] = max;
     }
     return colMax;
 }
 
 
 //this function prints the target row in the specified format.
-
 void printRow(int ** m, int colNumber, int targetRow, int * cols) { 
     printf("[");
     for (int i = 0; i < colNumber; i++) { 
@@ -78,9 +74,59 @@ void printRow(int ** m, int colNumber, int targetRow, int * cols) {
         else 
             printf("%*d]", cols[i], m[targetRow][i]);
     }
-    printf("\n");
 } 
 
+//this function prints the matrixes' multiplication
+void printMultiplication(int ** m1, int row1, int col1,
+                         int ** m2, int row2, int col2) {   
+    int * cols1 = findMaxCols(m1, row1, col1);
+    int * cols2 = findMaxCols(m2, row2, col2);
+    
+    for (int i = 0; i < col1; i++) { 
+        printf("%d  ", cols1[i]);
+    }
+    printf(" second: \n");
+
+    for (int i = 0; i < col2; i++) { 
+        printf("%d  ", cols2[i]);
+    }
+    printf("\n");
+
+    int row = 0;
+    while (row < row1 && row < row2) { 
+        printRow(m1, col1, row, cols1);
+        if (row == 0) { 
+            printf(" multiplied by ");
+        }
+        else { 
+            printf("%15s", "");
+        }
+        printRow(m2, col2, row, cols2);
+        printf("\n");
+        row++;
+    }
+    //consider the remaining matrixes here.
+
+    free(cols1);
+    free(cols2);
+}
+
+void printResultant(int ** res, int row, int col) { 
+    int * cols = findMaxCols(res, row, col);
+
+    for (int i = 0; i < row; i++) { 
+        if (i == 0) { 
+            printf("equals ");
+        }
+        else { 
+            printf("%7s", "");
+        }
+        printRow(res, col, i, cols);
+        printf("\n");
+    }
+
+    free(cols);
+}
 //this function reads in the input and stores it in the matrix
 bool readMatrix(int ** matrix, int row, int col) { 
     printf("Please enter non-negative integer values for the first matrix (%dx%d):",
@@ -158,25 +204,17 @@ int main(int argc, char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    int * cols = findMaxCols(matrix1, atoi(argv[1]), atoi(argv[2]));
-    for (int i = 0; i < atoi(argv[2]); i++) { 
-        printf("%d ", cols[i]);
-    }
-    printf("\n");
-
-    printRow(matrix1, atoi(argv[2]), 0, cols);
-    printRow(matrix1, atoi(argv[2]), 1, cols);
-    free(cols);
+    printMultiplication(matrix1, atoi(argv[1]), atoi(argv[2]), matrix2,
+    atoi(argv[3]), atoi(argv[4]));
 
     multiplyMatrixes(matrix1, matrix2, resultant,
                      atoi(argv[1]), atoi(argv[4]), atoi(argv[2]));
 
-    //printMultiplication(matrix1, matrix2, atoi(argv[1]), atoi(argv[2]),
-    //atoi(argv[3]), atoi(argv[4]));
 
     deallocate(matrix1, atoi(argv[1]));
     deallocate(matrix2, atoi(argv[3]));
     deallocate(resultant, atoi(argv[1]));
+    // printf("%d", findDigits(312));
 
     return EXIT_SUCCESS;
 } 
