@@ -20,11 +20,23 @@ int ** matrix_alloc(int rows, int cols) {
     return matrix;
 }
 
+//deallocates memory used by a matrix.
 void deallocate(int ** matrix, int row) { 
     for (int i = 0; i < row; i++) { 
         free(matrix[i]);
     }
     free(matrix);
+}
+
+//finds the number of digits in num
+int findDigits(int num) { 
+    if (num == 0) { return 1; }
+    int digit = 0; 
+    while (num > 0) { 
+        digit++;
+        num /= 10;
+    }
+    return digit;
 }
 
 bool errorCheck(char * argv[], int argc) { 
@@ -36,18 +48,31 @@ bool errorCheck(char * argv[], int argc) {
     return false;
 }
 
-//this function finds the max digit number in a given matrix.
-int findMaxDigits(int ** m, const int row, const int col){ 
-    int max = 0;
-    for (int i = 0; i < row; i++) { 
-        for (int j = 0; j < col; j++) { 
-            if (floor(log(m[i][j])) > max) { 
-                max = floor(log(m[i][j]));
+//this function finds the max digit numbers of cols of a matrix.
+int * findMaxCols(int ** m, const int row, const int col){ 
+    int * colMax = calloc(col, sizeof(int));
+    for (int i = 0; i < col; i++) { 
+        printf("%d ", colMax[i]);
+    }
+    printf("\n");
+    for (int j = 0; j < col; j++) { 
+        int max = 0; 
+        for (int i = 0; i < row; i++) {
+            int digit = findDigits(m[i][j]); 
+            if (digit > max) { 
+                colMax[j] = digit;
             }
         }
     }
-    return max;
+    return colMax;
 }
+
+
+//this function prints the target row in the specified format.
+/* 
+void printRow(int ** m, int rowNumber, int colNumber, int targetRow, int * cols) { 
+
+} */
 
 //this function reads in the input and stores it in the matrix
 bool readMatrix(int ** matrix, int row, int col) { 
@@ -66,89 +91,6 @@ bool readMatrix(int ** matrix, int row, int col) {
     return true;
 }
 
-//a function to print a matrix1 multiplied by matrix 2.
-void printMatrixes(int ** m1, int row1, int col1, int ** m2, int row2, int col2) { 
-    int max1 = findMaxDigits(m1, row1, col1);
-    int max2 = findMaxDigits(m2, row2, col2);
-
-    //first print the first rows of the matrixes
-    if (col1 == 1) { 
-        printf("[%*d", -max1, m1[0][0]);
-    }
-    else { 
-        printf("[");
-        for (int i = 0; i < col1; i++) { 
-            if (i < col1 - 1) { 
-                printf("%*d  ", -max1, m1[0][i]);
-            }
-            else { 
-                printf("%d", m1[0][i]);
-            }
-        }
-    }
-    printf("] multiplied by ");
-
-    if (col2 == 1) { 
-        printf("[%*d", -max2, m2[0][0]);
-    }
-    else { 
-        printf("[");
-        for (int i = 0; i < col2; i++) { 
-            if (i < col2 - 1) { 
-                printf("%*d  ", -max2, m2[0][i]);
-            }
-            else { 
-                printf("%d", m2[0][i]);
-            }
-        }
-    }
-    printf("]");
-    
-    //at this point the first line is done. 
-    printf("\n");
-
-    //create two booleans to keep track of the rows of matrixes.
-    bool first = true;
-    bool second = true;
-    int rowFirst = 1; 
-    int rowSecond = 1;
-    while (true) { 
-        if (!first || !second) break;
-        if (rowFirst == row1) { 
-            first = false;
-            continue;
-        }
-        if (rowSecond == row2) { 
-            second = false;
-            continue;
-        }
-
-        if (col1 == 1) { 
-            printf("[%d]", m1[rowFirst][0]);
-        }
-        else { 
-            printf("[");
-            for (int i = 0; i < col1; i++) { 
-                if (i < col1 - 1) { 
-                    printf("%*d  ", -max1, m1[rowFirst][i]);
-                }
-                else { 
-                    printf("%d", m1[rowFirst][i]);
-                }
-            }
-        }
-        printf("%-14c", ']');
-        rowFirst++;
-        rowSecond++;
-    }
-
-    /* for (int i = 0; i < row1; i++) { 
-        for (int j = 0; j < col1; j++) { 
-            printf("%d ", m1[i][j]);
-        }
-        printf("\n");
-    } */
-}
 
 //this function multiplies the m1 and m2 and stores the results
 //in resultant
@@ -164,6 +106,8 @@ void multiplyMatrixes(int ** m1, int ** m2, int ** resultant,
         }
     }
 }
+
+
 
 int main(int argc, char * argv[]) {
     /* Ensure we have the correct number of command-line arguments */
@@ -207,6 +151,12 @@ int main(int argc, char * argv[]) {
         return EXIT_FAILURE;
     }
 
+    int * cols = findMaxCols(matrix1, atoi(argv[1]), atoi(argv[2]));
+    for (int i = 0; i < atoi(argv[2]); i++) { 
+        printf("%d ", cols[i]);
+    }
+    printf("\n");
+    free(cols);
 
     multiplyMatrixes(matrix1, matrix2, resultant,
                      atoi(argv[1]), atoi(argv[4]), atoi(argv[2]));
