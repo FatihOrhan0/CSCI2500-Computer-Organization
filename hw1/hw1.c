@@ -105,6 +105,7 @@ void printMultiplication(int ** m1, int row1, int col1,
         }
     }
     else if (row < row2) { 
+        //calculate the number of spaces to put before printing the rows
         int total = 0; 
         for (int i = 0; i < col1; i++) { 
             total += cols1[i];
@@ -117,7 +118,6 @@ void printMultiplication(int ** m1, int row1, int col1,
             row++;
         }
     }
-    //consider the remaining matrices here.
 
     free(cols1);
     free(cols2);
