@@ -83,16 +83,6 @@ void printMultiplication(int ** m1, int row1, int col1,
     int * cols1 = findMaxCols(m1, row1, col1);
     int * cols2 = findMaxCols(m2, row2, col2);
     
-    for (int i = 0; i < col1; i++) { 
-        printf("%d  ", cols1[i]);
-    }
-    printf(" second: \n");
-
-    for (int i = 0; i < col2; i++) { 
-        printf("%d  ", cols2[i]);
-    }
-    printf("\n");
-
     int row = 0;
     while (row < row1 && row < row2) { 
         printRow(m1, col1, row, cols1);
@@ -105,6 +95,27 @@ void printMultiplication(int ** m1, int row1, int col1,
         printRow(m2, col2, row, cols2);
         printf("\n");
         row++;
+    }
+    //if one of the matrices still has remaining rows
+    if (row < row1) { 
+        while (row < row1) { 
+            printRow(m1, col1, row, cols1);
+            printf("\n");
+            row++;
+        }
+    }
+    else if (row < row2) { 
+        int total = 0; 
+        for (int i = 0; i < col1; i++) { 
+            total += cols1[i];
+        }
+        int numSpaces = total + col1 * 2 + 15;
+        while (row < row2) { 
+            printf("%*s", numSpaces, "");
+            printRow(m2, col2, row, cols2);
+            printf("\n");
+            row++;
+        }
     }
     //consider the remaining matrices here.
 
@@ -129,9 +140,15 @@ void printResultant(int ** res, int row, int col) {
     free(cols);
 }
 //this function reads in the input and stores it in the matrix
-bool readMatrix(int ** matrix, int row, int col) { 
-    printf("Please enter non-negative integer values for the"
-    "first matrix (%dx%d):\n", row, col);
+bool readMatrix(int ** matrix, int row, int col, int matNum) { 
+    if (matNum == 1) { 
+        printf("Please enter non-negative integer values for the "
+        "first matrix (%dx%d):\n", row, col);
+    }
+    else if (matNum == 2) { 
+        printf("Please enter non-negative integer values for the "
+        "second matrix (%dx%d):\n", row, col);
+    }
     for (int i = 0; i < row; i++) { 
         for (int j = 0; j < col; j++) { 
             int read;
@@ -190,7 +207,7 @@ int main(int argc, char * argv[]) {
     int ** resultant = matrix_alloc(atoi(argv[1]), atoi(argv[4]));
 
     //read the matrices, if there happens to be a negative value return failure
-    if (!readMatrix(matrix1, atoi(argv[1]), atoi(argv[2]))) { 
+    if (!readMatrix(matrix1, atoi(argv[1]), atoi(argv[2]), 1)) { 
         fprintf(stderr, "ERROR: Negative Number(s) Found");
         deallocate(matrix1, atoi(argv[1]));
         deallocate(matrix2, atoi(argv[3]));
@@ -198,13 +215,16 @@ int main(int argc, char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    if (!readMatrix(matrix2, atoi(argv[3]), atoi(argv[4]))) { 
+    if (!readMatrix(matrix2, atoi(argv[3]), atoi(argv[4]), 2)) { 
         fprintf(stderr, "ERROR: Negative Number(s) Found");
         deallocate(matrix1, atoi(argv[1]));
         deallocate(matrix2, atoi(argv[3]));
         deallocate(resultant, atoi(argv[1]));
         return EXIT_FAILURE;
     }
+
+    //here, the matrices are read and the result should be printed.
+    printf("\nRESULTS:\n");
 
     //multiply the matrices if they were read
     multiplymatrices(matrix1, matrix2, resultant,
