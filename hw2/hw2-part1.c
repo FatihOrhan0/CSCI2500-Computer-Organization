@@ -8,12 +8,25 @@
 #include <string.h>
 
 
-
-
 int main (int argc, char * argv[]) { 
+    if (argc > 2) { 
+        fprintf(stderr, "ERROR: Too many command line arguments.");
+    }
+    //a practical use of boolean with short
+    short histogram = 0;
+    if (argc == 2) { 
+        if (!strcmp(argv[1], "-b")) { 
+            histogram = 1;
+        }
+        else { 
+            fprintf(stderr, "ERROR: Unknown flag");
+        }
+    } 
+
     //initialize the array
     int * chars = calloc(95, sizeof(int));
-    
+
+    //process the input stream
     do {
         char c = fgetc(stdin);
         if (c == '\0' || c == '\n') { 
@@ -23,10 +36,25 @@ int main (int argc, char * argv[]) {
             chars[(int) c - 32]++;
         }
     } while (1);
-    printf("%d", chars[0]);
-    for (int i = 0; i < 95; i++) { 
-        if (chars[i] != 0) { 
-            printf("%c: %d\n", (char) chars[i] + 32, chars[i]);
+
+    if (!histogram) { 
+        for (int i = 0; i < 95; i++) { 
+            if (chars[i] != 0) { 
+                printf("%c: %d\n", (char) (i + 32), chars[i]);
+            }
+        }
+    }
+    else { 
+        for (int i = 0; i < 95; i++) { 
+            if (chars[i] != 0) { 
+                printf("%c: ", (char) (i + 32));
+                char * pounds = malloc(chars[i] + 1);
+                memset(pounds, '#', chars[i]);
+                pounds[chars[i]] = '\0';
+                printf("%s", pounds);
+                printf("\n");
+                free(pounds);
+            }
         }
     }
     free(chars);
