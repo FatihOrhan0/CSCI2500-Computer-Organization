@@ -27,15 +27,16 @@ int main (int argc, char * argv[]) {
     int * chars = calloc(95, sizeof(int));
 
     //process the input stream
+    char c;
     do {
-        char c = fgetc(stdin);
+        c = fgetc(stdin);
         if (c == '\0' || c == '\n') { 
             break;
         }
         if (isprint((int) c)) {
             chars[(int) c - 32]++;
         }
-    } while (1);
+    } while (c);
 
     if (!histogram) { 
         for (int i = 0; i < 95; i++) { 
