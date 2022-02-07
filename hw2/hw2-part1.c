@@ -30,7 +30,7 @@ int main (int argc, char * argv[]) {
     char c;
     do {
         c = fgetc(stdin);
-        if (c == '\0' || c == '\n') { 
+        if (c < ' ') { 
             break;
         }
         if (isprint((int) c)) {
