@@ -11,6 +11,7 @@
 int main (int argc, char * argv[]) { 
     if (argc > 2) { 
         fprintf(stderr, "ERROR: Too many command line arguments.");
+        return EXIT_FAILURE;
     }
     //a practical use of boolean with short
     short histogram = 0;
@@ -20,6 +21,7 @@ int main (int argc, char * argv[]) {
         }
         else { 
             fprintf(stderr, "ERROR: Unknown flag");
+            return EXIT_FAILURE;
         }
     } 
 
@@ -59,4 +61,5 @@ int main (int argc, char * argv[]) {
         }
     }
     free(chars);
+    return EXIT_SUCCESS;
 }
