@@ -32,7 +32,7 @@ int main (int argc, char * argv[]) {
     char c;
     do {
         c = fgetc(stdin);
-        if (c < ' ') { 
+        if ((int) c < 0) { 
             break;
         }
         if (isprint((int) c)) {
