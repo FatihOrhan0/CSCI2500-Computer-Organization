@@ -10,6 +10,8 @@
 //TODO: Parse the left of the first file. 
 //start working on the second file.
 
+
+
 //this function reads the first n characters and stores them in line
 void readLine(char * line, FILE * file1, int n) { 
     int i = 0;
@@ -35,6 +37,76 @@ void readLine(char * line, FILE * file1, int n) {
     }
 }
 
+//returns the number of lines the file has
+int countLines(char * filename) { 
+    FILE * file = fopen(filename, "r");
+    if (!file) { 
+        fprintf(stderr, "ERROR: Could Not Open: %s", filename);
+        return EXIT_FAILURE;
+    }
+    char c = '1';
+    int newlines = 1;
+    while (c > 0) { 
+        c = fgetc(file); 
+        if (c == '\n') { newlines++; }
+    }
+    fclose(file);
+    return newlines;
+}
+
+//this function reads the second file and prints the expected output
+int processSecond(char * filename, int col, char letter) { 
+    int lineCount = countLines(filename); 
+    FILE * file2 = fopen(filename, "r");
+    if (!file2) { 
+        fprintf(stderr, "ERROR: Could Not Open: %s", filename);
+        return EXIT_FAILURE;
+    }
+    //store the max number of characters in an int array
+    int * maxChars = calloc(col, sizeof(int));
+    for (int i = 0; i < lineCount - 1 ; i++) { 
+        char c = 'a';
+        int temp = 0;
+        do { 
+            c = fgetc(file2);
+            if (c == '\n') { break; }
+            temp++;
+        } while (c != '\n');
+        if (temp - 1 > maxChars[i % col]) { 
+            maxChars[i % col] = temp - 1;
+        }
+    }
+    printf("cols: %d\n", col);
+    for (int i = 0; i < col; i++) { 
+        printf("%d\n", maxChars[i]);
+    }
+    printf("%d\n", lineCount);
+    char *** data = malloc(sizeof(char**) * col);
+    for (int i = 0; i < col; i++) { 
+        data[i] = malloc(sizeof(char*) * lineCount / col);
+    }
+    for (int i = 0; i < col; i++) { 
+        for (int j = 0; j < lineCount / col; j++) { 
+            data[i][j] = malloc(sizeof(char) * maxChars[i]);
+        }
+    }
+    fseek(file2, 0, SEEK_SET);
+    /* for (int j = 0; j < lineCount; j++) { 
+        for (int i = 0; i < col; i++) { 
+            fgets(data[i][j], maxChars[i] + 1, file2);
+            printf("%s", data[i][j]);
+        }
+    } */
+    for (int i = 0; i < lineCount; i++) { 
+        int column = i % col;
+        int row = i / col;
+        fgets(data[column][row], 80, file2);
+        for (int i = 0; )
+        printf("abc: %d %s", i, data[column][row]);
+    }
+    return EXIT_SUCCESS;
+}
+
 //this function processes the first file
 int processFirst(char * filename, char * line, int * cols, char * letter) { 
     //open the file
@@ -53,6 +125,7 @@ int processFirst(char * filename, char * line, int * cols, char * letter) {
     *cols = atoi(charCols);
     free(charCols);
     if (*cols == 0) { 
+        fclose(file1);
         fprintf(stderr, "ERROR: Expected a Non-Zero Number on The Second Line.\n");
         return EXIT_FAILURE;
     }
@@ -60,10 +133,12 @@ int processFirst(char * filename, char * line, int * cols, char * letter) {
     //get the printable character in the next line
     * letter = fgetc(file1);
     if (fgetc(file1) != '\n') { 
+        fclose(file1);
         fprintf(stderr, "ERROR: Invalid Character.");
         return EXIT_FAILURE;
     }
     if (!isprint(*letter)) { 
+        fclose(file1);
         fprintf(stderr, "ERROR: Invalid Character.");
         return EXIT_FAILURE;
     }
@@ -81,6 +156,7 @@ int processFirst(char * filename, char * line, int * cols, char * letter) {
     for (int i = 0; i < (*cols); i++) { 
         printf("%s\n", colData[i]);
     } 
+    fclose(file1);
     return EXIT_SUCCESS;
 }
 
@@ -94,5 +170,6 @@ int main (int argc, char * argv[]) {
     char line[33];
     char letter;
     processFirst(argv[1], line, cols, &letter);
+    processSecond(argv[2], *cols, letter);
     free(cols);
 }
