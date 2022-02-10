@@ -6,56 +6,19 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include "hw2-helper.h"
 
-//TODO: Parse the left of the first file. 
-//start working on the second file.
+//TODO: Create a writeline function that takes left | right | string to print, 
+//int/string as arguments
+//clear out the wasted memory
+//create a function to hard code the column titles
+//create a function to print the dashes (by storing the entire line in a string)
+//organize the files and functions
+//consider using memset
 
-
-
-//this function reads the first n characters and stores them in line
-void readLine(char * line, FILE * file1, int n) { 
-    int i = 0;
-    char c;
-    do { 
-        c = fgetc(file1);
-        if (isprint(c)) { 
-            line[i] = c;
-        }
-        else { 
-            line[i] = '\0';
-            break; }
-        if (c == '\n') { 
-            line[i] = '\0';
-            break; }
-        i++;
-    } while (i < n);
-    line[n] = '\0';
-
-    //read the rest of the line
-    while (c != '\n') { 
-        c = fgetc(file1);
-    }
-}
-
-//returns the number of lines the file has
-int countLines(char * filename) { 
-    FILE * file = fopen(filename, "r");
-    if (!file) { 
-        fprintf(stderr, "ERROR: Could Not Open: %s", filename);
-        return EXIT_FAILURE;
-    }
-    char c = '1';
-    int newlines = 1;
-    while (c > 0) { 
-        c = fgetc(file); 
-        if (c == '\n') { newlines++; }
-    }
-    fclose(file);
-    return newlines;
-}
 
 //this function reads the second file and prints the expected output
-int processSecond(char * filename, int col, char letter) { 
+int processSecond(char * filename, int col, char letter, char ** titles) { 
     int lineCount = countLines(filename); 
     FILE * file2 = fopen(filename, "r");
     if (!file2) { 
@@ -76,39 +39,79 @@ int processSecond(char * filename, int col, char letter) {
             maxChars[i % col] = temp - 1;
         }
     }
-    printf("cols: %d\n", col);
-    for (int i = 0; i < col; i++) { 
-        printf("%d\n", maxChars[i]);
-    }
-    printf("%d\n", lineCount);
     char *** data = malloc(sizeof(char**) * col);
     for (int i = 0; i < col; i++) { 
         data[i] = malloc(sizeof(char*) * lineCount / col);
     }
     for (int i = 0; i < col; i++) { 
         for (int j = 0; j < lineCount / col; j++) { 
-            data[i][j] = malloc(sizeof(char) * maxChars[i]);
+            data[i][j] = malloc(sizeof(char) * maxChars[i] + 3);
         }
     }
     fseek(file2, 0, SEEK_SET);
-    /* for (int j = 0; j < lineCount; j++) { 
-        for (int i = 0; i < col; i++) { 
-            fgets(data[i][j], maxChars[i] + 1, file2);
-            printf("%s", data[i][j]);
-        }
-    } */
+    
     for (int i = 0; i < lineCount; i++) { 
         int column = i % col;
         int row = i / col;
-        fgets(data[column][row], 80, file2);
-        for (int i = 0; )
-        printf("abc: %d %s", i, data[column][row]);
+        if (!fgets(data[column][row], maxChars[column] + 3, file2)) { 
+            printf("%d %d %d\n", column, row, lineCount);
+        }
+        deleteNewlines(data[column][row]/* , maxChars[column] + 2 */);
     }
+    
+    for (int i = 0; i < col; i++) { 
+        int len = strlen(titles[i]);
+        if (len > maxChars[i]) { 
+            maxChars[i] = len;
+        }
+        printf("%d %s \n", maxChars[i], titles[i]);
+    }
+
+    /* for (int i = 0; i < lineCount; i++) { 
+        int column = i % col;
+        int row = i / col;
+        printf("%s\n", data[column][row]);
+    } */
+
+    for (int i = 0; i < lineCount; i++) { 
+        int column = i % col;
+        int row = i / col;
+        // printf("%d %d %s", column, row, data[column][row]);
+        if (column < col - 1) { 
+            printf(" %*s |", maxChars[column] + 1, data[column][row]);
+            // printLine(0, 1, data[column][row], 1, 20);
+        }
+        else { 
+            printf(" %*s \n", maxChars[column] + 1, data[column][row]);
+            // printLine(1, 0, data[column][row], 1, 20);
+        }
+    }
+    printf("\n\n\n%s", data[0][0]);
+
+    int * numberCols = calloc(col, sizeof(int));
+    for (int i = 0; i < col; i++) { 
+        char buffer[17];
+        strcpy(buffer, titles[i]);
+        buffer[6] = '\0';
+        if (strcmp("Number", buffer) == 0) { 
+            numberCols[i] = 1;
+            printf("%d", i);
+        }
+    } 
+    for (int j = 0; j < col; j++) { 
+        for (int i = 0; i < lineCount / col; i++) { 
+            free(data[j][i]);
+        }
+        free(data[j]);
+    }
+    free(numberCols);
+    free(maxChars);
+    free(data);
     return EXIT_SUCCESS;
 }
 
 //this function processes the first file
-int processFirst(char * filename, char * line, int * cols, char * letter) { 
+int processFirst(char * filename, char * line, int * cols, char * letter, char * secondFile) { 
     //open the file
     FILE * file1 = fopen(filename, "r");
     if (!file1) { 
@@ -118,7 +121,6 @@ int processFirst(char * filename, char * line, int * cols, char * letter) {
     //read the first 32 characters (if enough) to line
     readLine(line, file1, 32);
 
-    printf("%s", line);
     //read the number of columns in colNumber and parse to int
     char * charCols = malloc(4 * sizeof(char));
     fgets(charCols, 4, file1);
@@ -142,7 +144,6 @@ int processFirst(char * filename, char * line, int * cols, char * letter) {
         fprintf(stderr, "ERROR: Invalid Character.");
         return EXIT_FAILURE;
     }
-    printf("%c %d\n", *letter, *cols);
     
     //allocate memory to store the columns
     char ** colData = malloc((*cols) * sizeof(char*));
@@ -153,10 +154,12 @@ int processFirst(char * filename, char * line, int * cols, char * letter) {
     for (int i = 0; i < (*cols); i++) { 
         readLine(colData[i], file1, 16);
     }
-    for (int i = 0; i < (*cols); i++) { 
-        printf("%s\n", colData[i]);
-    } 
+    processSecond(secondFile, *cols, *letter, colData);
     fclose(file1);
+    for (int i = 0; i < *cols; i++) { 
+        free(colData[i]);
+    }
+    free(colData);
     return EXIT_SUCCESS;
 }
 
@@ -169,7 +172,7 @@ int main (int argc, char * argv[]) {
     int * cols = malloc(sizeof(int));
     char line[33];
     char letter;
-    processFirst(argv[1], line, cols, &letter);
-    processSecond(argv[2], *cols, letter);
+    processFirst(argv[1], line, cols, &letter, argv[2]);
+    
     free(cols);
 }
