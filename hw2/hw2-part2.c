@@ -53,11 +53,7 @@ int processSecond(char * filename, int col, char letter, char ** titles) {
     for (int i = 0; i < lineCount; i++) { 
         int column = i % col;
         int row = i / col;
-        if (!fgets(data[column][row], maxChars[column] + 3, file2)) { 
-            fprintf(stderr, "ERROR: Corrupted Lines.\n");
-            return EXIT_FAILURE;
-        }
-        deleteNewlines(data[column][row]/* , maxChars[column] + 2 */);
+        readLine(data[column][row], file2, maxChars[column] + 3);
     }
     
     for (int i = 0; i < col; i++) { 
