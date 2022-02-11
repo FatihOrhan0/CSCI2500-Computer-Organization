@@ -21,7 +21,7 @@ void readLine(char * line, FILE * file1, int n) {
             break; }
         i++;
     } while (i < n);
-    line[n] = '\0';
+    line[i] = '\0';
 
     //read the rest of the line
     while (c != '\n') { 
