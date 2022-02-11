@@ -35,8 +35,8 @@ int processSecond(char * filename, int col, char letter, char ** titles) {
             if (c == '\n') { break; }
             temp++;
         } while (c != '\n');
-        if (temp - 1 > maxChars[i % col]) { 
-            maxChars[i % col] = temp - 1;
+        if (temp > maxChars[i % col]) { 
+            maxChars[i % col] = temp;
         }
     }
     char *** data = malloc(sizeof(char**) * col);
@@ -54,7 +54,8 @@ int processSecond(char * filename, int col, char letter, char ** titles) {
         int column = i % col;
         int row = i / col;
         if (!fgets(data[column][row], maxChars[column] + 3, file2)) { 
-            printf("%d %d %d\n", column, row, lineCount);
+            fprintf(stderr, "ERROR: Corrupted Lines.\n");
+            return EXIT_FAILURE;
         }
         deleteNewlines(data[column][row]/* , maxChars[column] + 2 */);
     }
@@ -64,40 +65,104 @@ int processSecond(char * filename, int col, char letter, char ** titles) {
         if (len > maxChars[i]) { 
             maxChars[i] = len;
         }
-        printf("%d %s \n", maxChars[i], titles[i]);
     }
 
-    /* for (int i = 0; i < lineCount; i++) { 
-        int column = i % col;
-        int row = i / col;
-        printf("%s\n", data[column][row]);
-    } */
-
-    for (int i = 0; i < lineCount; i++) { 
-        int column = i % col;
-        int row = i / col;
-        // printf("%d %d %s", column, row, data[column][row]);
-        if (column < col - 1) { 
-            printf(" %*s |", maxChars[column] + 1, data[column][row]);
-            // printLine(0, 1, data[column][row], 1, 20);
-        }
-        else { 
-            printf(" %*s \n", maxChars[column] + 1, data[column][row]);
-            // printLine(1, 0, data[column][row], 1, 20);
-        }
-    }
-    printf("\n\n\n%s", data[0][0]);
-
-    int * numberCols = calloc(col, sizeof(int));
+   int * numberCols = calloc(col, sizeof(int));
     for (int i = 0; i < col; i++) { 
         char buffer[17];
         strcpy(buffer, titles[i]);
         buffer[6] = '\0';
         if (strcmp("Number", buffer) == 0) { 
             numberCols[i] = 1;
-            printf("%d", i);
         }
     } 
+
+    for (int i = 0; i < col; i++) { 
+        if (numberCols[i]) { 
+            int max = maxChars[i];
+            for (int j = 0; j < lineCount / col; j++) { 
+                if (atoi(data[i][j]) > max) { max = atoi(data[i][j]); }
+            }
+            maxChars[i] = max;
+        }
+    }
+    
+    for (int i = 0; i < col; i++) { 
+        if (!numberCols[i]) { 
+            if (i != col - 1) { 
+            printf(" %*s |", maxChars[i], titles[i]);
+            }
+            else { 
+                printf(" %*s\n", maxChars[i], titles[i]);
+            }
+        }
+        else { 
+            if (i != col - 1) { 
+                printf(" %-*s |", maxChars[i], titles[i]);
+            }
+            else { 
+                printf(" %s\n", titles[i]);
+            }
+        }
+    }
+    for (int i = 0; i < col; i++) { 
+        char * letters = malloc(sizeof(char) * (maxChars[i] + 1));
+        memset(letters, '-', maxChars[i]);
+        letters[maxChars[i]] = 0;
+        printf("-%s-", letters);
+        if (i != col - 1) { 
+            printf("|");
+        }
+        else { 
+            printf("\n");
+        }
+        free(letters);
+    }
+
+    for (int i = 0; i < lineCount; i++) { 
+        int column = i % col;
+        int row = i / col;
+        if (!numberCols[column]) { 
+            if (column < col - 1) { 
+                printf(" %*s |", maxChars[column], data[column][row]);
+            }
+            else { 
+                printf(" %*s\n", maxChars[column], data[column][row]);
+            }
+        }
+        else { 
+            if (column < col - 1) { 
+                if (atoi(data[column][row]) == 0) { printf("\n"); }
+                char * letters = malloc(sizeof(char) * (atoi(data[column][row]) + 1));
+                memset(letters, letter, atoi(data[column][row]));
+                letters[atoi(data[column][row])] = 0;
+                printf(" %-*s |", maxChars[column], letters);
+                free(letters);
+            }
+            else { 
+                if (atoi(data[column][row]) == 0) { printf("\n"); }
+                char * letters = malloc(sizeof(char) * (atoi(data[column][row]) + 1));
+                memset(letters, letter, atoi(data[column][row]));
+                letters[atoi(data[column][row])] = 0;
+                printf(" %s\n", letters);
+                free(letters);
+            }
+        }
+    }
+    for (int i = 0; i < col; i++) { 
+        char * letters = malloc(sizeof(char) * (maxChars[i] + 1));
+        memset(letters, '-', maxChars[i]);
+        letters[maxChars[i]] = 0;
+        printf("-%s-", letters);
+        if (i != col - 1) { 
+            printf("|");
+        }
+        else { 
+            printf("\n");
+        }
+        free(letters);
+    }
+    
     for (int j = 0; j < col; j++) { 
         for (int i = 0; i < lineCount / col; i++) { 
             free(data[j][i]);
@@ -154,6 +219,11 @@ int processFirst(char * filename, char * line, int * cols, char * letter, char *
     for (int i = 0; i < (*cols); i++) { 
         readLine(colData[i], file1, 16);
     }
+    for (int i = 0; i < (int) strlen(line); i++) { 
+        line[i] = toupper(line[i]);
+    }
+    printf("   === %s ===\n\n", line);
+
     processSecond(secondFile, *cols, *letter, colData);
     fclose(file1);
     for (int i = 0; i < *cols; i++) { 
