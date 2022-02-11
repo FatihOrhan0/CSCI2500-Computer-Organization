@@ -27,7 +27,7 @@ int processSecond(char * filename, int col, char letter, char ** titles) {
     }
     //store the max number of characters in an int array
     int * maxChars = calloc(col, sizeof(int));
-    for (int i = 0; i < lineCount - 1 ; i++) { 
+    for (int i = 0; i < lineCount; i++) { 
         char c = 'a';
         int temp = 0;
         do { 
@@ -82,10 +82,13 @@ int processSecond(char * filename, int col, char letter, char ** titles) {
             maxChars[i] = max;
         }
     }
-    
+    // printf("%d %d\n", maxChars[0], lineCount);
     for (int i = 0; i < col; i++) { 
         if (!numberCols[i]) { 
-            if (i != col - 1) { 
+            if (col == 1) { 
+                printf(" %*s\n", maxChars[i], titles[i]);
+            }
+            else if (i != col - 1) { 
             printf(" %*s |", maxChars[i], titles[i]);
             }
             else { 
@@ -93,6 +96,9 @@ int processSecond(char * filename, int col, char letter, char ** titles) {
             }
         }
         else { 
+            if (col == 1) { 
+                printf("%-*s\n", maxChars[i], titles[i]);
+            }
             if (i != col - 1) { 
                 printf(" %-*s |", maxChars[i], titles[i]);
             }
@@ -106,7 +112,10 @@ int processSecond(char * filename, int col, char letter, char ** titles) {
         memset(letters, '-', maxChars[i]);
         letters[maxChars[i]] = 0;
         printf("-%s-", letters);
-        if (i != col - 1) { 
+        if (col == 1) { 
+            printf("\n");
+         }
+        else if (i != col - 1) { 
             printf("|");
         }
         else { 
@@ -119,7 +128,10 @@ int processSecond(char * filename, int col, char letter, char ** titles) {
         int column = i % col;
         int row = i / col;
         if (!numberCols[column]) { 
-            if (column < col - 1) { 
+            if (col == 1) { 
+                printf(" %*s\n", maxChars[column], data[column][row]);
+            }
+            else if (column < col - 1) { 
                 printf(" %*s |", maxChars[column], data[column][row]);
             }
             else { 
@@ -127,7 +139,7 @@ int processSecond(char * filename, int col, char letter, char ** titles) {
             }
         }
         else { 
-            if (column < col - 1) { 
+            if (column < col - 1 || col == 1) { 
                 if (atoi(data[column][row]) == 0) { printf("\n"); }
                 char * letters = malloc(sizeof(char) * (atoi(data[column][row]) + 1));
                 memset(letters, letter, atoi(data[column][row]));
@@ -150,7 +162,10 @@ int processSecond(char * filename, int col, char letter, char ** titles) {
         memset(letters, '-', maxChars[i]);
         letters[maxChars[i]] = 0;
         printf("-%s-", letters);
-        if (i != col - 1) { 
+        if (col == 1) { 
+            
+        }
+        else if (i != col - 1) { 
             printf("|");
         }
         else { 
@@ -168,6 +183,7 @@ int processSecond(char * filename, int col, char letter, char ** titles) {
     free(numberCols);
     free(maxChars);
     free(data);
+    fclose(file2);
     return EXIT_SUCCESS;
 }
 
