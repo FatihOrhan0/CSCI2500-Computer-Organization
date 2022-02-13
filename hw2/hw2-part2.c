@@ -8,14 +8,6 @@
 #include <string.h>
 #include "hw2-helper.h"
 
-//TODO: Create a writeline function that takes left | right | string to print, 
-//int/string as arguments
-//clear out the wasted memory
-//create a function to hard code the column titles
-//create a function to print the dashes (by storing the entire line in a string)
-//organize the files and functions
-//consider using memset
-
 
 //this function reads the second file and prints the expected output
 int processSecond(char * filename, int col, char letter, char ** titles) { 
