@@ -1,0 +1,26 @@
+6
+Jane Austen
+20
+Charles Dickens
+9
+Ernest Hemingway
+22
+Jack Kerouac
+8
+F. Scott Fitzgerald
+7
+Mary Shelley
+5
+Charlotte Bronte
+11
+Mark Twain
+73
+Agatha Christie
+14
+Ian Fleming
+14
+J.K. Rowling
+54
+Stephen King
+1
+Oscar Wilde
