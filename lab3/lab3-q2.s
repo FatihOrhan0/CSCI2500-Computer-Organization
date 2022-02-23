@@ -3,9 +3,9 @@
   fibL:      .word 20
   newline:     .asciiz "\n"
 
-# the text segment contains our program code
+
 .text
-  .globl main     # main is a global label
+  .globl main   
 
 main: 
   sub $sp, $sp, 4
@@ -16,19 +16,12 @@ main:
   li $t0, 1
   sw $t0, 4($s0)
 
-  #int i = 0;
   li $t0, 0
 
-  #while (i < 18)
   loop: 
     slt $t3, $t0, 18
     beq $t3, 0, exit1
 
-    #reach the 2 + ith element of the array. Equate it to t1 + t2
-    #increase t0 (i), t1(j), t2(k) ---- j is initialized as 0, k as 1
-    #for (int i = 2; i < 20; i++) { 
-    # arr[i] = arr[j] + arr[k];
-    # j++, k++ }
 
     lw $t1, 0($s0)
     lw $t2, 4($s0)
