@@ -10,7 +10,7 @@ main:
         sw  $ra, 0($sp)   # store $ra on the stack
 
 
-        li $s0, 13             # Load Immediate (li)  lucky = 13
+        li $s0, -20             # Load Immediate (li)  lucky = 13
         sgt $t0, $s0, -13       #check if s0 > -13, store in t0
         beq $t0, 1, assign_tag  #forward to assign_tag if t0 == 1
         beq $t0, 0, normal_order
