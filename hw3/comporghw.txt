@@ -93,6 +93,7 @@ We wish to improve the CPI of FP instructions to make the program run in 128 x E
 Let T be the new CPI value for the L/S instructions. 
 (50 x E6 x 1 + 110 x E6 x 1 + 80 x E6 x T + 16 x E6 x 2) / 2 = 128 x E-3 s. 
 T = 0.8
+CPI improvement is, then, 100,000% = 80/0.8
 
 
 
