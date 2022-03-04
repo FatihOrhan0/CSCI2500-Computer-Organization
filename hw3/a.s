@@ -2,11 +2,7 @@
 #this file is the solution for the third homework that mimics hw1 in assembly. 
 
 
-#TODO: create isprint function
-#create a function to print n #s
-#for (int i = 0; i < n; i++) {printf("#");}
-#printf(" (%d)\n", n);
-
+#TODO: 
 
 #From the entered data stored in v0, go through 128 bytes.
 #int i = 0;
@@ -19,19 +15,21 @@
 #for (int j = 0; j < 95; j++) { 
 # if (charNums[j] != 0) { 
 #   printf("%c: ", (char) (j + 32));
-#   printDashes(charNums[j]);
-#
+#   printDashes(charNums[j]); 
+#}}
 
 
 
 .data
   buffer:     .space 128
-  chars:      .space 380
+  chars:      .word 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
   charLen:    .word 95
   prompt:     .asciiz "Enter data: "
   result1:    .asciiz "Read "
   result2:    .asciiz "bytes\n"
   newline:    .asciiz "\n"
+  openPar:    .asciiz " ("
+  closePar:    .asciiz ")"
   pound:      .asciiz "#"
 
 
@@ -42,15 +40,57 @@ main:
   sub $sp, $sp, 4
   sw  $ra, 0($sp) 
 
-  la $a1, prompt
-  lb $a0, 0($a1)
-  jal isprint
-  li $v0, 1
-  add $a0, $v1, $0
+  la $a0, prompt
+  li $v0, 4
   syscall
 
-  addi $a1, $0, 5
-  jal printNPounds
+  li $a1, 128
+  la $a0, buffer
+  li $v0, 8
+  syscall
+  #li $v0, 4
+  #syscall
+
+#int i = 0;
+#for (; i < 128; i++) { 
+# if (buffer[i] < 0) break;
+# if (!isprint(buffer[i])) charNums[((int) buffer[i]) - 32]++;
+#}
+#printf("Read %d bytes\n", i);
+
+  li $s0, 0
+
+
+  parseLoop: 
+    slt $t3, $s0, 95
+    beq $t3, 0, exit2
+
+    lb $s1, 0($a0)
+
+    slt $t6, $s1, 0
+    beq $t6, 0, exit2
+
+    sb $s1, 0($a2)
+    jal isprint
+    beq $v1, 0, parseLoop
+
+    la $s2, chars
+    sub $s2, $s2, 32
+    add $s2, $s2, $s1
+    lw $s3, 0($s2)
+    add $s3, $s3, 1
+    sw $s3, 0($s2)
+
+    j parseLoop
+
+  exit2: 
+
+  la $s4, chars
+  lw $s5, 0($s4)
+  add $a0, $s5, 0
+  li $v0, 1
+  syscall
+
 
 
   lw  $ra, 0($sp)
@@ -64,8 +104,8 @@ main:
   isprint: 
     #a0 -> n
     add $v1, $0, $0
-    slt $t0, $a0, 127
-    sgt $t1, $a0, 31
+    slt $t0, $a2, 127
+    sgt $t1, $a2, 31
     and $v1, $t0, $t1
     j $ra
 
