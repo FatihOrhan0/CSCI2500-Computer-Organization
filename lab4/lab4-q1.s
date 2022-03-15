@@ -21,7 +21,7 @@ parity:
     mult $s0, $t3
     mflo $s0
     
-    printEven: 
+    printEven:  
     li $v0, 4
     la $a0, even
     add $a0, $a0, $s0
