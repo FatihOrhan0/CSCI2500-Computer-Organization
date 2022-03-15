@@ -1,4 +1,3 @@
-
 .data
   even: .asciiz "EVEN\n" "ODD\n"
 .text
