@@ -3,7 +3,7 @@
   two: .asciiz "| byte #2: "
   three: .asciiz "| byte #3: "
   four: .asciiz "| byte #4: "
-  value: .word 0x4a889cf1
+  value: .word 0x12345678
   first: .word 0xff000000
   second: .word 0x00ff0000
   third: .word 0x0000ff00
@@ -14,7 +14,7 @@ main:
     sub $sp, $sp, 4
     sw $ra, 0($sp)
     lw $a0, value
-    jal extractBytes2
+    jal extractBytes
     lw $ra, 0($sp)
     addi $sp, $sp, 4
     jr $ra
