@@ -5,7 +5,8 @@
 main: 
     sub $sp, $sp, 4
     sw $ra, 0($sp)
-    addi $a0, $a0, 1072
+    addi $a0, $a0, 1070
+    addi $a1, $0, 0
     jal parity
     lw  $ra, 0($sp)
     addi $sp, $sp, 4
