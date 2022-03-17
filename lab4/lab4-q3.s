@@ -58,9 +58,6 @@ evens:
         move $s6, $a0 
         
         lw $a0, 0($a0)
-        bne $a0, 0, skipIncrease5
-        sub $s4, $s4, 3
-        skipIncrease5: 
         jal extractBytes2
 
         move $a0, $t0
