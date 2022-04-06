@@ -20,7 +20,7 @@
 .text
   .globl main
 ###################################################
-
+#a
 main:
   sub $sp, $sp, 4   # allocate stack space to store $ra
   sw  $ra, 0($sp)   # store $ra on the stack
@@ -40,7 +40,7 @@ main:
   move $a2, $v0   # $v0 is the result from read_int above...
   jal strncpy
 ###################################################
-
+#b
   # display dest string via print_string syscall
   la  $a0, dest
   ori  $v0, $zero, 4
@@ -56,13 +56,13 @@ main:
 # strncpy( char * dest, const char * src, size_t n );
 #                  $a0               $a1        $a2
 ###################################################
-
+#c
 strncpy:
   # for ( $t0 = 0 ; $t0 < $a2 ; $t0++ ) { ... }
   #
-  li  $t0, 0       # $t0 = 0
+  ori  $t0, $0, 0       # $t0 = 0
 ###################################################
-
+#d
 loop:
   # use the set if less than (slt) instruction to control the loop
   slt $t1, $t0, $a2  # if $t0 < $a2 then set $t1 = 1; else $t1 = 0
@@ -84,7 +84,7 @@ loop:
   # unconditional jump (j)
   j loop
 ###################################################
-
+#e
 exit:
   jr $ra
 #
@@ -94,12 +94,12 @@ exit:
 # strlen( const char * s );
 #                     $a0   ==>  length returned in $v0
 ###################################################
-
+#f
 strlen:
   addi $t0, $a0, 0
   ori  $t1, $zero, 0       # $t1 = 0
 ###################################################
-
+#g
 L1:
   lbu $t2, 0($t0)  # load byte unsigned (lbu)
   beq $t2, $zero, strlenexit
@@ -113,7 +113,7 @@ L1:
   # unconditional jump (j)
   j L1
 ###################################################
-
+#h
 strlenexit:
   move $v0, $t1
   jr $ra
