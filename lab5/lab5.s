@@ -26,7 +26,7 @@ main:
   sw  $ra, 0($sp)   # store $ra on the stack
 
   # display prompt (print_string)
-  la  $a0, prompt
+  la  $a0, prompt #lui $1, 4083
   ori  $v0, $zero,  4
   syscall
 
@@ -35,9 +35,9 @@ main:
   syscall      # read_int ==> result is in $v0
 
   # set up parameters dest, src, and n for strncpy() function call:
-  la  $a0, dest
-  la  $a1, src
-  move $a2, $v0   # $v0 is the result from read_int above...
+  la  $a0, dest #lui $1, 4097
+  la  $a1, src  #ori $4, $1, 10
+  addi $a2, $v0, 0   # $v0 is the result from read_int above...
   jal strncpy
 ###################################################
 #b
@@ -69,7 +69,8 @@ loop:
 
   # branch if not equal (bne)
   bne $t1, 1, exit  # if $t1 != 1 then goto exit
-
+###################################################
+#z
   # copy byte from src to dest
   lbu $t2, 0($a1)  # load byte unsigned (lbu)
   sb  $t2, 0($a0)  # store byte (sb)
@@ -103,7 +104,8 @@ strlen:
 L1:
   lbu $t2, 0($t0)  # load byte unsigned (lbu)
   beq $t2, $zero, strlenexit
-
+########################################
+#y
   # update pointer $t0
   add $t0, $t0, 1
 
@@ -115,7 +117,7 @@ L1:
 ###################################################
 #h
 strlenexit:
-  move $v0, $t1
+  addi $v0, $t1, 0
   jr $ra
 #
 #############################################################
