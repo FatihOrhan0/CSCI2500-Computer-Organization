@@ -85,14 +85,26 @@ int main(int argc, char * argv[]) {
                 t++; 
                 p++;
             } 
-            printf("%s %c %s\n", prevWord, oprt, word1);
+            else if (p < opNum) { 
+                if (oprt == '+') { 
+                    if (isNum(word1)) { 
+                        printf("addi $t%d,$t%d,%s\n", t % 10, t % 10 - 1, word1);
+                        t++;
+                    }
+                    else { 
+                        printf("add $t%d,$t%d,%s\n", t % 10, t % 10 - 1, regs[letters[word1[0] - 'a']]);
+                        t++;
+                    }
+                }
+            }
+            //printf("%s %c %s\n", prevWord, oprt, word1);
 
             if (buffer[col] == ';') break;
             col++; 
             oprt = buffer[col];
             col += 2; 
             col2 = 0; 
-            printf("%s %c %s\n", prevWord, oprt, word1);
+            //printf("%s %c %s\n", prevWord, oprt, word1);
             strcpy(prevWord, word1);
         }
     }
