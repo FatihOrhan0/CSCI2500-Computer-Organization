@@ -8,6 +8,10 @@
 #include <unistd.h>
 
 
+//TODO: check if the variable is introduced before.
+//finish the assignment operator at the end of the line. 
+
+
 //a function to check if a string is an integer
 int isNum(char * s) { 
     int j = 0; 
@@ -34,8 +38,8 @@ int countSpaces(char * s) {
 int letters[26];
 
 //define the T registers in a string 
-const char * regs[18] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9",
- "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7"};
+const char * tregs[10] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9"};
+const char * sregs[8] = {"s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7"};
 
 
 
@@ -51,53 +55,88 @@ int main(int argc, char * argv[]) {
     //we assume no number will be longer than 9 digits. 
     char word1[10];
     char oprt = '!';
-    char * buffer = calloc(sizeof(char), 300);
     FILE * file = fopen(argv[1], "r");
     int s = 0, t = 0; 
-    while ((buffer = fgets(buffer, 100, file))) { 
+    while (1) { 
+        char * buffer = calloc(sizeof(char), 200);
+        if (!fgets(buffer, 200, file)) { 
+            free(buffer);
+            break;
+        }
         printf("# %s", buffer);
         char regDest = buffer[0];
         if (letters[buffer[0] - 'a'] == -1) {
-            letters[buffer[0] - 'a'] = 10 + (s % 8); 
+            letters[buffer[0] - 'a'] = (s % 8); 
             s++;
         }
         int col = 4;
+        int p = 0; 
         char prevWord[10] = "abc";
         while (buffer[col] != ';') {
             int col2 = 0;
-            int p = 0; 
             int opNum = (countSpaces(buffer) - 2) / 2; 
             while (buffer[col] != ' ' && buffer[col] != ';') { 
                 word1[col2] = buffer[col];
                 col2++;
                 col++;
+                p++;
             }
             word1[col2] = '\0';
             if (!isNum(word1) && opNum == 0) { 
-                printf("addu %s,$0,%s\n", regs[letters[regDest - 'a']], regs[letters[word1[0] - 'a']]);
+                printf("addu %s,$0,%s\n", sregs[letters[regDest - 'a']], sregs[letters[word1[0] - 'a']]);
             }
             else if (isNum(word1) && opNum == 0) { 
-                printf("ori %s,$0,%s\n", regs[letters[regDest - 'a']], word1);
+                printf("ori %s,$0,%s\n", sregs[letters[regDest - 'a']], word1);
                 p++;
             }
-            else if (isNum(word1)) { 
-                printf("ori $t%d,$0,%s\n", t % 10, word1);
-                t++; 
-                p++;
-            } 
-            else if (p < opNum) { 
+            else if (isNum(word1) && p == 2) { 
+                printf("ori $%s,$0,%s\n", tregs[t % 10], word1);
+                t++;   
+            }
+            else if (p <= opNum + 1) { 
                 if (oprt == '+') { 
                     if (isNum(word1)) { 
-                        printf("addi $t%d,$t%d,%s\n", t % 10, t % 10 - 1, word1);
+                        printf("addi $%s,$%s,%s\n", tregs[t % 10], tregs[(t - 1) % 10], word1);
                         t++;
                     }
                     else { 
-                        printf("add $t%d,$t%d,%s\n", t % 10, t % 10 - 1, regs[letters[word1[0] - 'a']]);
+                        printf("add $%s,$%s,%s\n", tregs[t % 10], tregs[(t - 1) % 10],
+                        sregs[letters[word1[0] - 'a']]);
+                        t++;
+                    }
+                }
+                else { 
+                    if (isNum(word1)) { 
+                        printf("addi $%s,$%s,-%s\n", tregs[t % 10], tregs[(t - 1) % 10], word1);
+                        t++;
+                    }
+                    else { 
+                        printf("sub $%s,$%s,%s\n", tregs[t % 10], tregs[(t - 1) % 10],
+                        sregs[letters[word1[0] - 'a']]);
                         t++;
                     }
                 }
             }
-            //printf("%s %c %s\n", prevWord, oprt, word1);
+            else { 
+                if (oprt == '+') { 
+                    if (isNum(word1)) { 
+                        printf("addi $%s,$%s,%s\n", sregs[letters[regDest - 'a']], tregs[t % 10], word1);
+                    }
+                    else { 
+                        printf("add $%s,$%s,%s\n", sregs[letters[regDest - 'a']], tregs[t % 10],
+                        sregs[letters[word1[0] - 'a']]);
+                    }
+                }
+                else { 
+                    if (isNum(word1)) { 
+                        printf("addi $%s,$%s,-%s\n", sregs[letters[regDest - 'a']], tregs[(t - 1) % 10], word1);
+                    }
+                    else { 
+                        printf("sub $%s,$%s,%s\n", sregs[letters[regDest - 'a']], tregs[(t - 1) % 10],
+                        sregs[letters[word1[0] - 'a']]);
+                    }
+                }
+            }
 
             if (buffer[col] == ';') break;
             col++; 
@@ -106,8 +145,11 @@ int main(int argc, char * argv[]) {
             col2 = 0; 
             //printf("%s %c %s\n", prevWord, oprt, word1);
             strcpy(prevWord, word1);
+           // printf("%d %d\n", p, opNum);
         }
+        free(buffer);
     }
-    free(buffer);
+
+    fclose(file);
     return EXIT_SUCCESS;
 }
