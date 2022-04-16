@@ -7,8 +7,34 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+
+//a function to check if a string is an integer
+int isNum(char * s) { 
+    int j = 0; 
+    while (s[j] != '\0') { 
+        if (s[j] > 47 && s[j] < 58) { 
+            j++; continue; 
+        }
+        return 0;
+    }
+    return 1;
+}
+
+
+//count the number of spaces to determine the operator count
+int countSpaces(char * s) { 
+    int i = 0, spaces = 0; 
+    while (s[i] != '\0') { 
+        if (s[i] == ' ') spaces++;
+        i++; 
+    }
+    return spaces;  
+}
+
+int letters[26];
+
 //define the T registers in a string 
-char * regs[18] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9",
+const char * regs[18] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9",
  "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7"};
 
 
@@ -18,13 +44,62 @@ int main(int argc, char * argv[]) {
         fprintf(stderr, "ERROR: Incompatible Arguments!\n");
         return EXIT_FAILURE;
     }
+    //initialize the letters array
+    for (int i = 0; i < 26; i++) { 
+        letters[i] = -1; 
+    }
+    //we assume no number will be longer than 9 digits. 
+    char word1[10];
+    char oprt;
+    char word2[10];
     char * buffer = calloc(sizeof(char), 300);
     FILE * file = fopen(argv[1], "r");
+    int s = 0, t = 0; 
     while ((buffer = fgets(buffer, 100, file))) { 
-        for (unsigned int i = 0; i < sizeof(buffer); i++) { 
-            printf("%c", buffer[i]);
+        printf("# %s", buffer);
+        char regDest = buffer[0];
+        if (letters[buffer[0] - 'a'] == -1) {
+            letters[buffer[0] - 'a'] = 10 + (s % 8); 
+            s++;
         }
-        printf("%s", buffer); 
+        int col = 4;
+        while (buffer[col] != ';') {
+            int col2 = 0;
+            int p = 0; 
+            int opNum = (countSpaces(buffer) - 2) / 2; 
+            while (buffer[col] != ' ' && buffer[col] != ';') { 
+                word1[col2] = buffer[col];
+                col2++;
+                col++;
+            }
+            word1[col2] = '\0';
+            if (!isNum(word1) && opNum == 0) { 
+                printf("addu %s,$0,%s\n", regs[letters[regDest - 'a']], regs[letters[word1[0] - 'a']]);
+            }
+            else if (isNum(word1) && opNum == 0) { 
+                printf("ori %s,$0,%s\n", regs[letters[regDest - 'a']], word1);
+                p++;
+            }
+            else if (isNum(word1)) { 
+                printf("ori $t%d,$0,%s\n", t % 10, word1);
+                t++; 
+                p++;
+            } 
+            if (buffer[col] == ';') break;
+            col++; 
+            oprt = buffer[col];
+            col += 2; 
+            col2 = 0; 
+            while (buffer[col] != ' ' && buffer[col] != ';') { 
+                word2[col2] = buffer[col];
+                col2++;
+                col++;
+            }
+            word2[col2] = '\0';
+            printf("%s %c %s\n", word1, oprt, word2);
+
+        }
     }
+    free(buffer);
     return EXIT_SUCCESS;
 }
