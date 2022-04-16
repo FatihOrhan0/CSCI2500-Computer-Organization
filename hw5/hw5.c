@@ -8,8 +8,7 @@
 #include <unistd.h>
 
 
-//TODO: check if the variable is introduced before.
-//finish the assignment operator at the end of the line. 
+//TODO: consider starting with register value.  
 
 
 //a function to check if a string is an integer
@@ -82,11 +81,16 @@ int main(int argc, char * argv[]) {
                 p++;
             }
             word1[col2] = '\0';
+            if (!isNum(word1) && letters[word1[0] - 'a'] == -1) { 
+                letters[word1[0] - 'a'] = (s % 8); 
+                s++;
+                p--;
+            }
             if (!isNum(word1) && opNum == 0) { 
-                printf("addu %s,$0,%s\n", sregs[letters[regDest - 'a']], sregs[letters[word1[0] - 'a']]);
+                printf("addu $%s,$0,%s\n", sregs[letters[regDest - 'a']], sregs[letters[word1[0] - 'a']]);
             }
             else if (isNum(word1) && opNum == 0) { 
-                printf("ori %s,$0,%s\n", sregs[letters[regDest - 'a']], word1);
+                printf("ori $%s,$0,%s\n", sregs[letters[regDest - 'a']], word1);
                 p++;
             }
             else if (isNum(word1) && p == 2) { 
