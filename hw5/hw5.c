@@ -8,9 +8,6 @@
 #include <unistd.h>
 
 
-//TODO: consider starting with register value.  
-
-
 //a function to check if a string is an integer
 int isNum(char * s) { 
     int j = 0; 
@@ -70,7 +67,6 @@ int main(int argc, char * argv[]) {
         }
         int col = 4;
         int p = 0; 
-        char prevWord[10] = "abc";
         while (buffer[col] != ';') {
             int col2 = 0;
             int opNum = (countSpaces(buffer) - 2) / 2; 
@@ -78,35 +74,119 @@ int main(int argc, char * argv[]) {
                 word1[col2] = buffer[col];
                 col2++;
                 col++;
-                p++;
+                //p++;
             }
             word1[col2] = '\0';
             if (!isNum(word1) && letters[word1[0] - 'a'] == -1) { 
                 letters[word1[0] - 'a'] = (s % 8); 
                 s++;
-                p--;
+                //p++;
             }
+            //printf("%d %d \n", p, opNum);
+            //a = b;
+            //printf("%c %d %d\n", oprt, opNum, p); 
+            //printf("%s\n", word1);
             if (!isNum(word1) && opNum == 0) { 
-                printf("addu $%s,$0,%s\n", sregs[letters[regDest - 'a']], sregs[letters[word1[0] - 'a']]);
+                printf("addu $%s,$0,$%s\n", sregs[letters[regDest - 'a']], sregs[letters[word1[0] - 'a']]);
             }
+            //a = 3;
             else if (isNum(word1) && opNum == 0) { 
                 printf("ori $%s,$0,%s\n", sregs[letters[regDest - 'a']], word1);
-                p++;
             }
-            else if (isNum(word1) && p == 2) { 
+            //a = a + b;
+            else if (!isNum(word1) && opNum >= 1 && p == 0) { 
+                oprt = buffer[6];
+                //printf("%c", oprt);
+                char temp = word1[0];
+                col = 8;
+                col2 = 0; 
+                while (buffer[col] != ' ' && buffer[col] != ';') { 
+                    word1[col2] = buffer[col];
+                    col++;
+                    col2++;
+                }
+                if (!isNum(word1) && letters[word1[0] - 'a'] == -1) { 
+                    letters[word1[0] - 'a'] = (s % 8); 
+                    s++;
+                }
+                word1[col2] = '\0';
+                if (opNum == 1) {
+                    if (oprt == '+') { 
+                        if (isNum(word1)) { 
+                            printf("addi $%s,$%s,%s\n", sregs[letters[regDest - 'a']],
+                            sregs[letters[temp - 'a']], word1); 
+                            break;
+                        }
+                        else { 
+                            printf("add $%s,$%s,$%s\n", sregs[letters[regDest - 'a']],
+                            sregs[letters[temp - 'a']], sregs[letters[word1[0] - 'a']]);
+                            break;
+                        }
+                    }
+                    else if (oprt == '-') { 
+                        if (isNum(word1)) { 
+                            printf("addi $%s,$%s,-%s\n", sregs[letters[regDest - 'a']],
+                            sregs[letters[temp - 'a']], word1); 
+                            break;
+                        }
+                        else { 
+                            printf("sub $%s,$%s,$%s\n", sregs[letters[regDest - 'a']],
+                            sregs[letters[temp - 'a']], sregs[letters[word1[0] - 'a']]);
+                            break;
+                        }
+                    }
+                }
+                else { 
+                    if (oprt == '+') { 
+                        if (isNum(word1)) { 
+                            printf("addi $%s,$%s,%s\n", tregs[t % 10],
+                            sregs[(letters[temp - 'a'])], word1); 
+                            t++;
+                            p++;
+                        }
+                        else { 
+                            printf("add $%s,$%s,$%s\n", tregs[t % 10],
+                            sregs[letters[temp - 'a']], sregs[letters[word1[0] - 'a']]);
+                            t++;
+                            p++;
+                        }
+                    }
+                    else if (oprt == '-') { 
+                        if (isNum(word1)) { 
+                            printf("addi $%s,$%s,-%s\n", tregs[t % 10],
+                            sregs[letters[temp - 'a']], word1); 
+                            t++;
+                            p++;
+                        }
+                        else { 
+                            printf("sub $%s,$%s,$%s\n", tregs[t % 10],
+                            sregs[letters[temp - 'a']], sregs[letters[word1[0] - 'a']]);
+                            t++;
+                            p++;
+                        }
+                    }
+                    p++;
+                }
+            }
+            //a = a + 3;
+            //a = 3 +...;
+            else if (isNum(word1) && p == 0) { 
                 printf("ori $%s,$0,%s\n", tregs[t % 10], word1);
                 t++;   
+                p++;
             }
-            else if (p <= opNum + 1) { 
+            else if (p < opNum - 2) { 
                 if (oprt == '+') { 
                     if (isNum(word1)) { 
                         printf("addi $%s,$%s,%s\n", tregs[t % 10], tregs[(t - 1) % 10], word1);
                         t++;
+                        p++;
                     }
                     else { 
-                        printf("add $%s,$%s,%s\n", tregs[t % 10], tregs[(t - 1) % 10],
+                        printf("add $%s,$%s,$%s\n", tregs[t % 10], tregs[(t - 1) % 10],
                         sregs[letters[word1[0] - 'a']]);
                         t++;
+                        p++;
                     }
                 }
                 else { 
@@ -115,7 +195,7 @@ int main(int argc, char * argv[]) {
                         t++;
                     }
                     else { 
-                        printf("sub $%s,$%s,%s\n", tregs[t % 10], tregs[(t - 1) % 10],
+                        printf("sub $%s,$%s,$%s\n", tregs[t % 10], tregs[(t - 1) % 10],
                         sregs[letters[word1[0] - 'a']]);
                         t++;
                     }
@@ -124,10 +204,10 @@ int main(int argc, char * argv[]) {
             else { 
                 if (oprt == '+') { 
                     if (isNum(word1)) { 
-                        printf("addi $%s,$%s,%s\n", sregs[letters[regDest - 'a']], tregs[t % 10], word1);
+                        printf("addi $%s,$%s,%s\n", sregs[letters[regDest - 'a']], tregs[(t - 1) % 10], word1);
                     }
                     else { 
-                        printf("add $%s,$%s,%s\n", sregs[letters[regDest - 'a']], tregs[t % 10],
+                        printf("add $%s,$%s,$%s\n", sregs[letters[regDest - 'a']], tregs[(t - 1) % 10],
                         sregs[letters[word1[0] - 'a']]);
                     }
                 }
@@ -136,7 +216,7 @@ int main(int argc, char * argv[]) {
                         printf("addi $%s,$%s,-%s\n", sregs[letters[regDest - 'a']], tregs[(t - 1) % 10], word1);
                     }
                     else { 
-                        printf("sub $%s,$%s,%s\n", sregs[letters[regDest - 'a']], tregs[(t - 1) % 10],
+                        printf("sub $%s,$%s,$%s\n", sregs[letters[regDest - 'a']], tregs[(t - 1) % 10],
                         sregs[letters[word1[0] - 'a']]);
                     }
                 }
@@ -148,7 +228,6 @@ int main(int argc, char * argv[]) {
             col += 2; 
             col2 = 0; 
             //printf("%s %c %s\n", prevWord, oprt, word1);
-            strcpy(prevWord, word1);
            // printf("%d %d\n", p, opNum);
         }
         free(buffer);
