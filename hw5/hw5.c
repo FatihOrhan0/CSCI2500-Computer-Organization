@@ -50,8 +50,7 @@ int main(int argc, char * argv[]) {
     }
     //we assume no number will be longer than 9 digits. 
     char word1[10];
-    char oprt;
-    char word2[10];
+    char oprt = '!';
     char * buffer = calloc(sizeof(char), 300);
     FILE * file = fopen(argv[1], "r");
     int s = 0, t = 0; 
@@ -63,6 +62,7 @@ int main(int argc, char * argv[]) {
             s++;
         }
         int col = 4;
+        char prevWord[10] = "abc";
         while (buffer[col] != ';') {
             int col2 = 0;
             int p = 0; 
@@ -85,19 +85,15 @@ int main(int argc, char * argv[]) {
                 t++; 
                 p++;
             } 
+            printf("%s %c %s\n", prevWord, oprt, word1);
+
             if (buffer[col] == ';') break;
             col++; 
             oprt = buffer[col];
             col += 2; 
             col2 = 0; 
-            while (buffer[col] != ' ' && buffer[col] != ';') { 
-                word2[col2] = buffer[col];
-                col2++;
-                col++;
-            }
-            word2[col2] = '\0';
-            printf("%s %c %s\n", word1, oprt, word2);
-
+            printf("%s %c %s\n", prevWord, oprt, word1);
+            strcpy(prevWord, word1);
         }
     }
     free(buffer);
