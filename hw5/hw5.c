@@ -82,16 +82,18 @@ int main(int argc, char * argv[]) {
                 s++;
                 //p++;
             }
-            //printf("%d %d \n", p, opNum);
             //a = b;
-            //printf("%c %d %d\n", oprt, opNum, p); 
-            //printf("%s\n", word1);
             if (!isNum(word1) && opNum == 0) { 
                 printf("addu $%s,$0,$%s\n", sregs[letters[regDest - 'a']], sregs[letters[word1[0] - 'a']]);
             }
             //a = 3;
             else if (isNum(word1) && opNum == 0) { 
                 printf("ori $%s,$0,%s\n", sregs[letters[regDest - 'a']], word1);
+            }
+            else if (isNum(word1) && p == 0) { 
+                printf("ori $%s,$0,%s\n", tregs[t % 10], word1);
+                t++;   
+                p++;
             }
             //a = a + b;
             else if (!isNum(word1) && opNum >= 1 && p == 0) { 
@@ -168,14 +170,7 @@ int main(int argc, char * argv[]) {
                     p++;
                 }
             }
-            //a = a + 3;
-            //a = 3 +...;
-            else if (isNum(word1) && p == 0) { 
-                printf("ori $%s,$0,%s\n", tregs[t % 10], word1);
-                t++;   
-                p++;
-            }
-            else if (p < opNum - 2) { 
+            else if (p < opNum) { 
                 if (oprt == '+') { 
                     if (isNum(word1)) { 
                         printf("addi $%s,$%s,%s\n", tregs[t % 10], tregs[(t - 1) % 10], word1);
@@ -193,11 +188,13 @@ int main(int argc, char * argv[]) {
                     if (isNum(word1)) { 
                         printf("addi $%s,$%s,-%s\n", tregs[t % 10], tregs[(t - 1) % 10], word1);
                         t++;
+                        p++;
                     }
                     else { 
                         printf("sub $%s,$%s,$%s\n", tregs[t % 10], tregs[(t - 1) % 10],
                         sregs[letters[word1[0] - 'a']]);
                         t++;
+                        p++;
                     }
                 }
             }
@@ -227,8 +224,6 @@ int main(int argc, char * argv[]) {
             oprt = buffer[col];
             col += 2; 
             col2 = 0; 
-            //printf("%s %c %s\n", prevWord, oprt, word1);
-           // printf("%d %d\n", p, opNum);
         }
         free(buffer);
     }
