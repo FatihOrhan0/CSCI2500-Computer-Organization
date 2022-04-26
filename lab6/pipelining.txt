@@ -1,0 +1,43 @@
+ori $t2,$0,64			IF	ID	EX	MM	WB
+ori $t5,$0,128				IF	ID	EX	MM	WB
+sw $t2,32($a0)					IF	ID	EX	MM	WB
+swp $t2,$t5								IF	ID	EX	MM	WB
+ssum $a0,$t2,256												IF	ID	EX	MM	WB
+ori $t2,$0,512													IF	ID	EX	MM	WB
+
+
+
+add $s3, $s1, $s0     	 	IF	ID	EX	MM	WB
+addi $s4, $s0, 128 			IF	ID	EX	MM	WB
+nop
+nop
+lw $s1, 4($s4)							IF	ID	EX	MM	WB
+lw $s2, 0($s3)								IF	ID	EX	MM	WB
+NOP
+NOP
+or $s2, $s3, $s2									IF	..	..	ID	EX	MM	WB
+NOP
+NOP
+addi $s3, $s3, 8												IF	ID	EX	MM	WB
+NOP
+NOP
+ssum $s3, $s2, 256														IF	ID	EX	MM	WB	
+sw $s1, 0($s4)																IF	ID	EX	MM	WB
+
+
+
+
+
+add $s3, $s1, $s0     	 	IF	ID	EX	MM	WB
+addi $s4, $s0, 128 			IF	ID	EX	MM	WB
+NOP
+lw $s2, 0($s3)						IF	ID	EX	MM	WB
+lw $s1, 4($s4)							IF	ID	EX	MM	WB	
+NOP						
+or $s2, $s3, $s2									IF	ID	EX	MM	WB
+addi $s3, $s3, 8										IF	ID	EX	MM	WB
+sw $s1, 0($s4)											IF	ID	EX	MM	WB
+ssum $s3, $s2, 256											IF	ID	EX	MM	WB	
+
+
+
