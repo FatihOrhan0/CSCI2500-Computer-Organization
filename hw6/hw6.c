@@ -104,13 +104,16 @@ int main(int argc, char * argv[]) {
                 word1[i - 4] = buffer[i];
             }
             word1[i - 4] = '\0';
+            // x = y;
+            if (strlen(word1) == 0) { 
+                printf("lw $t0,%d($a0)\n", letters[buffer[4] - 'a']);
+                printf("sw $t0,%d($a0)\n", letters[buffer[0] - 'a']);
+            }
             //x = num;
-            if (isNum(word1)) {
+            else {
                 printf("ori $t0,$0,%s\n", word1);
                 printf("sw $t0,%d($a0)\n", letters[buffer[0] - 'a']);
             }
-            // x = y;
-            
         }
     }
 
