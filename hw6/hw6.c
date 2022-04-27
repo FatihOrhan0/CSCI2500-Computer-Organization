@@ -79,7 +79,6 @@ int main(int argc, char * argv[]) {
 
     //store the integers in the stack
     char buffer[200];
-    fgets(buffer, 200, file); 
     
     
     //we will need to store at most 2 words at once. We also need to store an int to imitate $sp
@@ -90,23 +89,28 @@ int main(int argc, char * argv[]) {
 
     while (1) { 
         if (!fgets(buffer, 200, file)) break;
+        //integer assignments such as int x; int x, y;
         if (countSpaces(buffer) == 1 || commaCheck(buffer)) { 
             for (int i = 4; i < (int) strlen(buffer) - 1; i += 3) { 
-            letters[buffer[i] - 'a'] = counter * 4;
-            counter++;
+                letters[buffer[i] - 'a'] = counter * 4;
+                counter++;
+            }
         }
-        }
-        if (countSpaces(buffer) == 2) {
+        //direct assignments, we still need to deal with x = y
+        else if (countSpaces(buffer) == 2) {
             int i = 4; 
             for (; i < 13; i++) { 
                 if (!isdigit(buffer[i])) break;
                 word1[i - 4] = buffer[i];
             }
             word1[i - 4] = '\0';
+            //x = num;
             if (isNum(word1)) {
                 printf("ori $t0,$0,%s\n", word1);
                 printf("sw $t0,%d($a0)\n", letters[buffer[0] - 'a']);
             }
+            // x = y;
+            
         }
     }
 
