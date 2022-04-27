@@ -6,9 +6,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <ctype.h>
 #include <string.h>
 
-//TODO: 
+//TODO: multi line integer assignments (by checking space == 1 or exists ',')
 
 
 //a function to check if a string is an integer
@@ -23,6 +24,15 @@ int isNum(char * s) {
     return 1;
 }
 
+//checks if ',' exists in buffer
+int commaCheck(char * s) { 
+    int i = 0;
+    while (s[i] != '\0') { 
+        if (s[i] == ',') return 1;
+        i++;
+    }
+    return 0;
+}
 
 //count the number of spaces to determine the operator count
 int countSpaces(char * s) { 
@@ -68,18 +78,38 @@ int main(int argc, char * argv[]) {
     FILE * file = fopen(argv[1], "r");
 
     //store the integers in the stack
-    char buffer[100];
-    fgets(buffer, 100, file); 
-    int counter = 0;
-    for (int i = 4; i < (int) strlen(buffer) - 1; i += 3) { 
-        letters[buffer[i] - 'a'] = counter * 4;
-        counter++;
-    }
+    char buffer[200];
+    fgets(buffer, 200, file); 
     
+    
+    //we will need to store at most 2 words at once. We also need to store an int to imitate $sp
+    char word1[10];
+    char word2[10];
+    int counter = 0;
 
-    if (argc > 1) { 
-        printf("%s\n", argv[1]);
+
+    while (1) { 
+        if (!fgets(buffer, 200, file)) break;
+        if (countSpaces(buffer) == 1 || commaCheck(buffer)) { 
+            for (int i = 4; i < (int) strlen(buffer) - 1; i += 3) { 
+            letters[buffer[i] - 'a'] = counter * 4;
+            counter++;
+        }
+        }
+        if (countSpaces(buffer) == 2) {
+            int i = 4; 
+            for (; i < 13; i++) { 
+                if (!isdigit(buffer[i])) break;
+                word1[i - 4] = buffer[i];
+            }
+            word1[i - 4] = '\0';
+            if (isNum(word1)) {
+                printf("ori $t0,$0,%s\n", word1);
+                printf("sw $t0,%d($a0)\n", letters[buffer[0] - 'a']);
+            }
+        }
     }
+
 
 
 
