@@ -29,6 +29,7 @@ main:
   la  $a0, prompt #lui $1, 4083
   ori  $v0, $zero,  4
   syscall
+  nop
 
   # read int from keyboard
   ori  $v0, $zero, 5
