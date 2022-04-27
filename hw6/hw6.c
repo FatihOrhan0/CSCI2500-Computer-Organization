@@ -11,10 +11,32 @@
 //TODO: 
 
 
-//refined strlen function
-unsigned int strlen2(char * s) { 
-    return 2;
+//a function to check if a string is an integer
+int isNum(char * s) { 
+    int j = 0; 
+    while (s[j] != '\0') { 
+        if (s[j] > 47 && s[j] < 58) { 
+            j++; continue; 
+        }
+        return 0;
+    }
+    return 1;
 }
+
+
+//count the number of spaces to determine the operator count
+int countSpaces(char * s) { 
+    int i = 0, spaces = 0; 
+    while (s[i] != '\0') { 
+        if (s[i] == ' ') spaces++;
+        i++; 
+    }
+    return spaces;  
+}
+
+//define the registers as strings
+const char * tregs[10] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9"};
+const char * sregs[8] = {"s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7"};
 
 
 int main(int argc, char * argv[]) { 
@@ -25,6 +47,8 @@ int main(int argc, char * argv[]) {
     
     //this array will be used to store the locations of integers
     int letters[26];
+    //store the last used t register
+    int t = 0;
 
 
     //initialize the letters array.
