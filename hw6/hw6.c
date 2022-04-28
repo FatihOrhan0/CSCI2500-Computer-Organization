@@ -9,8 +9,22 @@
 #include <ctype.h>
 #include <string.h>
 
-//TODO: multi line integer assignments (by checking space == 1 or exists ',')
+//TODO: 
 
+//fetches one word from given pos
+char * getWord(char * s, int pos, int * isEnd, char * res) { 
+    int i = 0;
+    for (; i < 9 && i + pos < (int) strlen(s); i++) {
+        if (s[i + pos] == ' ') break;
+        else if (s[i + pos] == ';') { 
+            *isEnd = 1;
+            break;
+        }
+        res[i] = s[i + pos];
+    }
+    res[i] = '\0';
+    return res;
+}
 
 //a function to check if a string is an integer
 int isNum(char * s) { 
@@ -46,7 +60,6 @@ int countSpaces(char * s) {
 
 //define the registers as strings
 const char * tregs[10] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9"};
-const char * sregs[8] = {"s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7"};
 
 
 int main(int argc, char * argv[]) { 
@@ -89,6 +102,7 @@ int main(int argc, char * argv[]) {
 
     while (1) { 
         if (!fgets(buffer, 200, file)) break;
+        t = 0;
         //integer assignments such as int x; int x, y;
         if (countSpaces(buffer) == 1 || commaCheck(buffer)) { 
             for (int i = 4; i < (int) strlen(buffer) - 1; i += 3) { 
@@ -96,8 +110,9 @@ int main(int argc, char * argv[]) {
                 counter++;
             }
         }
-        //direct assignments, we still need to deal with x = y
+        //direct assignments,
         else if (countSpaces(buffer) == 2) {
+            printf("# %s", buffer);
             int i = 4; 
             for (; i < 13; i++) { 
                 if (!isdigit(buffer[i])) break;
@@ -113,6 +128,59 @@ int main(int argc, char * argv[]) {
             else {
                 printf("ori $t0,$0,%s\n", word1);
                 printf("sw $t0,%d($a0)\n", letters[buffer[0] - 'a']);
+            }
+        }
+        //this will be else addition
+        else { 
+            printf("# %s", buffer);
+            int i = 4; 
+            for (; i < 13; i++) { 
+                if (buffer[i] == ' ') break;
+                word1[i - 4] = buffer[i];
+            }
+            word1[i - 4] = '\0';
+            if (isNum(word1)) { 
+                printf("ori $t0,$0,%s\n", word1);
+                t++;
+            }
+            else { 
+                printf("lw $t0,%d($a0)\n", letters[word1[0] - 'a']);
+                t++;
+            }
+            int isEnd = 0;
+            int pos = 7 + strlen(word1);
+            while (!isEnd) { 
+                getWord(buffer, pos, &isEnd, word2);
+                char oprt = buffer[pos - 2];
+                if (oprt == '+') {
+                    if (isNum(word2)) { 
+                        printf("addi $%s,$%s,%s\n", tregs[(t % 10)], tregs[(t - 1) % 10], word2);
+                        t++;
+                    } 
+                    else { 
+                        printf("lw $%s,$%d($a0)\n", tregs[(t % 10)], letters[word2[0] - 'a']);
+                        t++;
+                        printf("add $%s,$%s,$%s\n", tregs[(t % 10)], tregs[(t - 1) % 10], tregs[(t - 2) % 10]);
+                        t++;
+                    }
+                }
+                else { 
+                    if (isNum(word2)) { 
+                         printf("addi $%s,$%s,%s\n", tregs[(t % 10)], tregs[(t - 1) % 10], word2);
+                        t++;
+                    }
+                    else { 
+                        printf("lw $%s,$%d($a0)\n", tregs[(t % 10)], letters[word2[0] - 'a']);
+                        t++;
+                        printf("sub $%s,$%s,$%s\n", tregs[(t % 10)], tregs[(t - 1) % 10], tregs[(t - 2) % 10]);
+                        t++;
+                    }
+                }
+                //printf("%s %c\n", word2, oprt);
+                pos += strlen(word2) + 3;
+                if (isEnd) { 
+                    printf("sw $%s,%d($a0)\n", tregs[(t - 1) % 10], letters[buffer[0] - 'a']);
+                }
             }
         }
     }
