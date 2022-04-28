@@ -123,7 +123,7 @@ int main(int argc, char * argv[]) {
     char word2[10];
     int counter = 0;
 
-
+    //addition/subtraction
     if (!m) {
         while (1) { 
             if (!fgets(buffer, 200, file)) break;
@@ -209,6 +209,7 @@ int main(int argc, char * argv[]) {
             }
         }
     }
+
     //parsing multiplications
     else { 
         while (1) { 
@@ -246,6 +247,11 @@ int main(int argc, char * argv[]) {
                 int i = 4; 
                 int isEnd = 0;
                 getWord(buffer, i, &isEnd, word1);
+                if (word1[0] == '0') { 
+                    printf("ori $t0,$0,0\n");
+                    printf("sw $t0,%d($a0)\n", letters[buffer[0] - 'a']);
+                    continue;
+                }
                 i += strlen(word1) + 3;
                 getWord(buffer, i, &isEnd, word2);
                 if (isNum(word1)) { 
@@ -255,6 +261,11 @@ int main(int argc, char * argv[]) {
                 else { 
                     printf("lw $t0,%d($a0)\n", letters[word1[0] - 'a']);
                     t++;
+                }
+                if (word2[0] == '0') { 
+                    printf("ori $t1,$0,0\n");
+                    printf("sw $t1,%d($a0)\n", letters[buffer[0] - 'a']);
+                    continue;
                 }
                 if (isNum(word2)) { 
                     printf("ori $t1,$0,%s\n", word1);
@@ -283,6 +294,11 @@ int main(int argc, char * argv[]) {
                 i += strlen(word2) + 3;
                 while (!isEnd) { 
                     getWord(buffer, i, &isEnd, word2);
+                    if (word2[0] == '0') { 
+                        printf("ori $%s,$0,0\n", tregs[t % 10]);
+                        printf("sw $%s,%d($a0)\n", tregs[t % 10], letters[buffer[0] - 'a']);
+                        break;
+                    }
                     char oprt = buffer[i - 2];
                     if (isNum(word2)) { 
                         printf("ori $%s,$0,%s\n", tregs[t % 10], word2);
