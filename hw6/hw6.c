@@ -9,7 +9,8 @@
 #include <ctype.h>
 #include <string.h>
 
-//TODO: Take care of multiplying by 0
+//TODO: multiplication by a constant is not done directly, handle that.
+
 
 //this function checks if there's multiplication in the file
 int checkMult(char * filename) { 
@@ -86,10 +87,11 @@ int main(int argc, char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    int m = checkMult(argv[1]);
     
     //this array will be used to store the locations of integers
     int letters[26];
+    //this will store the pipelining stages
+    //int letterUses[26];
     //store the last used t register
     int t = 0;
 
@@ -97,18 +99,27 @@ int main(int argc, char * argv[]) {
     //initialize the letters array.
     for (int i = 0; i < 26; i++) { 
         letters[i] = -1;
+        //letterUses[i] = -1;     
     }
+
+    //find the location of the filename in the command line arguments
+    int fileloc = 1;
 
     //check pipelining
     short isPipe = 0; 
     if (argc == 3) {  
-        if (strcmp("--pipelined", argv[2]) == 0) { 
+        if (strcmp("--pipelined", argv[1]) == 0) { 
             isPipe = 1;
+            fileloc++;
         }
     }
 
+    //check if the file contains multiplication
+    int m = checkMult(argv[fileloc]);
+
+
     //open the file for read
-    FILE * file = fopen(argv[1], "r");
+    FILE * file = fopen(argv[fileloc], "r");
     if (!file) { 
         fprintf(stderr, "ERROR: INVALID FILENAME!\n");
         return EXIT_FAILURE;
@@ -123,8 +134,100 @@ int main(int argc, char * argv[]) {
     char word2[10];
     int counter = 0;
 
+
+
+    //general structure for pipelining: we will store the line number being compiled (similar to pc)
+    //for each letter of the alphabet we will store the latest line a variable has been used and update
+    //every time the variable is reused
+    if (isPipe) { 
+        while (1) { 
+            if (!fgets(buffer, 200, file)) break;
+            t = 0;
+            //integer assignments such as int x; int x, y;
+            if (countSpaces(buffer) == 1 || commaCheck(buffer)) { 
+                for (int i = 4; i < (int) strlen(buffer) - 1; i += 3) { 
+                    letters[buffer[i] - 'a'] = counter * 4;
+                    counter++;
+                }
+            }
+            //direct assignments,
+            else if (countSpaces(buffer) == 2) {
+                printf("# %s", buffer);
+                int i = 4; 
+                for (; i < 13; i++) { 
+                    if (!isdigit(buffer[i])) break;
+                    word1[i - 4] = buffer[i];
+                }
+                word1[i - 4] = '\0';
+                // x = y;
+                if (strlen(word1) == 0) { 
+                    printf("lw $t0,%d($a0)\nnop\n", letters[buffer[4] - 'a']);
+                    printf("sw $t0,%d($a0)\n", letters[buffer[0] - 'a']);
+                }
+                //x = num;
+                else {
+                    printf("ori $t0,$0,%s\nnop\n", word1);
+                    printf("sw $t0,%d($a0)\n", letters[buffer[0] - 'a']);
+                }
+            }
+            //this will be else addition
+            else { 
+                printf("# %s", buffer);
+                int i = 4; 
+                for (; i < 13; i++) { 
+                    if (buffer[i] == ' ') break;
+                    word1[i - 4] = buffer[i];
+                }
+                word1[i - 4] = '\0';
+                if (isNum(word1)) { 
+                    printf("ori $t0,$0,%s\n", word1);
+                    t++;
+                }
+                else { 
+                    printf("lw $t0,%d($a0)\n", letters[word1[0] - 'a']);
+                    t++;
+                }
+                int isEnd = 0;
+                int pos = 7 + strlen(word1);
+                while (!isEnd) { 
+                    getWord(buffer, pos, &isEnd, word2);
+                    char oprt = buffer[pos - 2];
+                    if (oprt == '+') {
+                        if (isNum(word2)) { 
+                            printf("nop\nnop\naddi $%s,$%s,%s\n", tregs[(t % 10)], tregs[(t - 1) % 10], word2);
+                            t++;
+                        } 
+                        else { 
+                            printf("lw $%s,%d($a0)\nnop\nnop\n", tregs[(t % 10)], letters[word2[0] - 'a']);
+                            t++;
+                            printf("add $%s,$%s,$%s\n", tregs[(t % 10)], tregs[(t - 2) % 10], tregs[(t - 1) % 10]);
+                            t++;
+                        }
+                    }
+                    else { 
+                        if (isNum(word2)) { 
+                            printf("nop\nnop\naddi $%s,$%s,-%s\n", tregs[(t % 10)], tregs[(t - 1) % 10], word2);
+                            t++;
+                        }
+                        else { 
+                            printf("lw $%s,%d($a0)\nnop\nnop\n", tregs[(t % 10)], letters[word2[0] - 'a']);
+                            t++;
+                            printf("sub $%s,$%s,$%s\n", tregs[(t % 10)], tregs[(t - 2) % 10], tregs[(t - 1) % 10]);
+                            t++;
+                        }
+                    }
+                    pos += strlen(word2) + 3;
+                    if (isEnd) { 
+                        printf("nop\nsw $%s,%d($a0)\n", tregs[(t - 1) % 10], letters[buffer[0] - 'a']);
+                    }
+                }
+            }
+        }
+    }
+
+
     //addition/subtraction
-    if (!m) {
+    else if (!m) {
         while (1) { 
             if (!fgets(buffer, 200, file)) break;
             t = 0;
@@ -183,21 +286,21 @@ int main(int argc, char * argv[]) {
                             t++;
                         } 
                         else { 
-                            printf("lw $%s,$%d($a0)\n", tregs[(t % 10)], letters[word2[0] - 'a']);
+                            printf("lw $%s,%d($a0)\n", tregs[(t % 10)], letters[word2[0] - 'a']);
                             t++;
-                            printf("add $%s,$%s,$%s\n", tregs[(t % 10)], tregs[(t - 1) % 10], tregs[(t - 2) % 10]);
+                            printf("add $%s,$%s,$%s\n", tregs[(t % 10)], tregs[(t - 2) % 10], tregs[(t - 1) % 10]);
                             t++;
                         }
                     }
                     else { 
                         if (isNum(word2)) { 
-                            printf("addi $%s,$%s,%s\n", tregs[(t % 10)], tregs[(t - 1) % 10], word2);
+                            printf("addi $%s,$%s,-%s\n", tregs[(t % 10)], tregs[(t - 1) % 10], word2);
                             t++;
                         }
                         else { 
-                            printf("lw $%s,$%d($a0)\n", tregs[(t % 10)], letters[word2[0] - 'a']);
+                            printf("lw $%s,%d($a0)\n", tregs[(t % 10)], letters[word2[0] - 'a']);
                             t++;
-                            printf("sub $%s,$%s,$%s\n", tregs[(t % 10)], tregs[(t - 1) % 10], tregs[(t - 2) % 10]);
+                            printf("sub $%s,$%s,$%s\n", tregs[(t % 10)], tregs[(t - 2) % 10], tregs[(t - 1) % 10]);
                             t++;
                         }
                     }
@@ -276,11 +379,11 @@ int main(int argc, char * argv[]) {
                     t++;
                 }
                 if (buffer[i - 2] == '*') { 
-                    printf("mult $t0,t1\nmflo $t2\n");
+                    printf("mult $t0,$t1\nmflo $t2\n");
                     t++;
                 }
                 else if (buffer[i - 2] == '/') { 
-                    printf("div $t0,t1\nmflo $t2\n");
+                    printf("div $t0,$t1\nmflo $t2\n");
                     t++;
                 }
                 else if (buffer[i - 2] == '%') { 
