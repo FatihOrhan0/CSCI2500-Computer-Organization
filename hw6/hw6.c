@@ -8,9 +8,71 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <string.h>
+#include <math.h>
 
 //TODO: multiplication by a constant is not done directly, handle that.
 
+
+//define the registers as strings
+const char * tregs[10] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9"};
+
+
+void multiplyByConstant(int *treg, char * num) { 
+    int t = *treg;
+    int n = atoi(num);
+    if (n == 1) { return; }
+    if (n == -1) { 
+        printf("sub $%s,$0,$%s\n", tregs[t % 10], tregs[t % 10]);
+        t++;
+        *treg = t;
+        return;
+    }
+    int neg = 0; 
+    if (n < 0) { 
+        neg = 1;
+        n *= -1;
+    }
+    int counter = 0;
+    int j = pow(2, 16);
+    for (int i = 0; i <= 16; i++) { 
+        int k = n & j;
+        if (k) counter++;
+        j /= 2;
+    }
+
+    j = pow(2,16); 
+    if (counter > 1) { 
+        t++;
+    }
+
+    int initial = 0;
+    for (int i = 0; i <= 17; i++) { 
+        int k = n & j;
+        if (counter > 1 && k && k != 1 && initial == 0) {
+            printf("sll $%s,$%s,%d\n", tregs[t % 10], tregs[(t - 2) % 10], 16 - i);
+            initial++;
+        } 
+        else if (counter > 1 && k && k != 1) { 
+            printf("sll $%s,$%s,%d\n", tregs[(t - 1) % 10], tregs[(t - 2) % 10], 16 - i);
+            printf("add $%s,$%s,$%s\n", tregs[t % 10], tregs[t % 10], tregs[(t - 1) % 10]);
+            initial++;
+        }
+        else if (counter == 1 && k != 1 && k) { 
+            printf("sll $%s,$%s,%d\n", tregs[t % 10], tregs[(t - 1) % 10], 16 - i);
+            initial++;
+        }
+        else if (n % 2 == 1 && j == 0) { 
+            printf("add $%s,$%s,$%s\n", tregs[t % 10], tregs[t % 10], tregs[(t - 2) % 10]);
+            initial++;
+        }
+        j /= 2;
+    }
+    if (neg) { 
+        printf("sub $%s,$0,$%s\n", tregs[t % 10], tregs[t % 10]);
+    }
+    t++;
+    *treg = t;
+}
 
 //this function checks if there's multiplication in the file
 int checkMult(char * filename) { 
@@ -49,7 +111,7 @@ char * getWord(char * s, int pos, int * isEnd, char * res) {
 int isNum(char * s) { 
     int j = 0; 
     while (s[j] != '\0') { 
-        if (s[j] > 47 && s[j] < 58) { 
+        if ((s[j] > 47 && s[j] < 58) || s[j] == 45) { 
             j++; continue; 
         }
         return 0;
@@ -77,8 +139,6 @@ int countSpaces(char * s) {
     return spaces;  
 }
 
-//define the registers as strings
-const char * tregs[10] = {"t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9"};
 
 
 int main(int argc, char * argv[]) { 
@@ -139,7 +199,7 @@ int main(int argc, char * argv[]) {
     //general structure for pipelining: we will store the line number being compiled (similar to pc)
     //for each letter of the alphabet we will store the latest line a variable has been used and update
     //every time the variable is reused
-    if (isPipe) { 
+    if (isPipe) {
         while (1) { 
             if (!fgets(buffer, 200, file)) break;
             t = 0;
@@ -370,15 +430,18 @@ int main(int argc, char * argv[]) {
                     printf("sw $t1,%d($a0)\n", letters[buffer[0] - 'a']);
                     continue;
                 }
-                if (isNum(word2)) { 
-                    printf("ori $t1,$0,%s\n", word1);
+                if (isNum(word2) && buffer[i - 2] == '*') { 
+                    multiplyByConstant(&t, word2);
+                }
+                else if (isNum(word2)) { 
+                    printf("ori $t1,$0,%s\n", word2);
                     t++;
                 }
                 else { 
                     printf("lw $t1,%d($a0)\n", letters[word2[0] - 'a']);
                     t++;
                 }
-                if (buffer[i - 2] == '*') { 
+                if (buffer[i - 2] == '*' && !isNum(word2)) { 
                     printf("mult $t0,$t1\nmflo $t2\n");
                     t++;
                 }
@@ -391,11 +454,11 @@ int main(int argc, char * argv[]) {
                     t++;
                 }
                 if (isEnd) { 
-                    printf("sw $t2,%d($a0)\n", letters[buffer[0] - 'a']);
-                    break;
+                    printf("sw $%s,%d($a0)\n", tregs[(t - 1) % 10], letters[buffer[0] - 'a']);
+                    continue;
                 }
                 i += strlen(word2) + 3;
-                while (!isEnd) { 
+                while (!isEnd) {
                     getWord(buffer, i, &isEnd, word2);
                     if (word2[0] == '0') { 
                         printf("ori $%s,$0,0\n", tregs[t % 10]);
@@ -403,7 +466,13 @@ int main(int argc, char * argv[]) {
                         break;
                     }
                     char oprt = buffer[i - 2];
-                    if (isNum(word2)) { 
+                    
+                    if (isNum(word2) && oprt == '*') { 
+                        multiplyByConstant(&t, word2);
+                        if (isEnd) { goto end; } 
+                        else { goto begin; }
+                    }
+                    else if (isNum(word2)) { 
                         printf("ori $%s,$0,%s\n", tregs[t % 10], word2);
                     }
                     else { 
@@ -427,10 +496,12 @@ int main(int argc, char * argv[]) {
                         printf("mfhi $%s\n", tregs[t % 10]);
                         t++;
                     }
-                    i += strlen(word2) + 3;
+                    end:
                     if (isEnd) { 
                         printf("sw $%s,%d($a0)\n", tregs[(t - 1) % 10], letters[buffer[0] - 'a']);
                     }
+                    begin:
+                    i += strlen(word2) + 3;
                 }
             }
         }
