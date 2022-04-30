@@ -1,11 +1,4 @@
-int a, b, c;
-int d;
-int e, f, g;
-a = 0;
-c = 10;
-b = 5;
-e = 5;
-f = 10;
-a = b;
-a = b + 10 - c - d + e + 1024 + g;
-c = b + 10;
+int a, g, h, f;
+g = 100;
+h = 200;
+f = g + h + 42 + a + a + a + a + a + a + a + a;
