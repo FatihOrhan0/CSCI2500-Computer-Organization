@@ -1,7 +1,8 @@
-int y, z;
+int y, z, a, b, c, d, e;
 y = z * z / y * y * y * y * y * 43;
 z = 16 / y;
 y = -16 * z;
 y = y % 15 * z;
 y = z * 24;
 y = z / 16;
+y = z / z % z * y % c * d % 23 * a * 46 * b * 0;
