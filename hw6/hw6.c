@@ -479,7 +479,7 @@ int main(int argc, char * argv[]) {
                         printf("lw $%s,%d($a0)\n", tregs[t % 10], letters[word2[0] - 'a']);
                     }
                     if (oprt == '*') { 
-                        printf("mult $%s,$%s\n", tregs[t % 10], tregs[(t - 1) % 10]);
+                        printf("mult $%s,$%s\n", tregs[(t - 1) % 10], tregs[t % 10]);
                         t++;
                         printf("mflo $%s\n", tregs[t % 10]);
                         t++;
